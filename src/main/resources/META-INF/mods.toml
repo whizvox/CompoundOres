@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="MIT License"
+issueTrackerURL="https://github.com/whizvox/CompoundOres"
+[[mods]]
+    modId="compoundores"
+    version="dev-20210610"
+    displayName="Compound Ores"
+    #updateJSONURL="https://change.me.example.invalid/updates.json" #https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
+    #displayURL="https://whizvox.me/mcmods/compoundores.php"
+    #logoFile="compoundores.png"
+    #credits="Thanks for this example mod goes to Java"
+    authors="whizvox"
+    description='''
+Spice up mining expeditions with ores containing multiple resources.
+    '''
+[[dependencies.compoundores]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.compoundores]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
