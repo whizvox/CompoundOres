@@ -48,13 +48,13 @@ public class OreComponents {
       return;
     }
 
-    COAL = register("coal", OreComponent.builder().block(Blocks.COAL_ORE).spawnWeight(12).color(0x212121).type(OreType.NONMETAL).build());
-    IRON = register("iron", OreComponent.builder().block(Blocks.IRON_ORE).spawnWeight(8).color(0xece4e5).type(OreType.METAL).harvestLevel(1).build());
-    LAPIS = register("lapis", OreComponent.builder().block(Blocks.LAPIS_ORE).spawnWeight(3).color(0x556cec).type(OreType.NONMETAL).harvestLevel(1).build());
-    GOLD = register("gold", OreComponent.builder().block(Blocks.GOLD_ORE).spawnWeight(4).color(0xffe761).type(OreType.METAL).harvestLevel(2).build());
-    REDSTONE = register("redstone", OreComponent.builder().block(Blocks.REDSTONE_ORE).spawnWeight(6).color(0xf0142b).type(OreType.DUST).harvestLevel(2).build());
-    DIAMOND = register("diamond", OreComponent.builder().block(Blocks.DIAMOND_ORE).spawnWeight(2).color(0x96dded).type(OreType.GEM).harvestLevel(2).build());
-    EMERALD = register("emerald", OreComponent.builder().block(Blocks.EMERALD_ORE).spawnWeight(1).color(0x69ec6b).type(OreType.GEM).harvestLevel(2).build());
+    COAL = register("coal", OreComponent.builder().block(Blocks.COAL_ORE).spawnWeight(12).color(0x404040).type(OreType.NONMETAL).build());
+    IRON = register("iron", OreComponent.builder().block(Blocks.IRON_ORE).spawnWeight(8).color(0xd8af93).type(OreType.METAL).harvestLevel(1).build());
+    LAPIS = register("lapis", OreComponent.builder().block(Blocks.LAPIS_ORE).spawnWeight(3).color(0x2f4ef9).type(OreType.NONMETAL).harvestLevel(1).build());
+    GOLD = register("gold", OreComponent.builder().block(Blocks.GOLD_ORE).spawnWeight(4).color(0xffd905).type(OreType.METAL).harvestLevel(2).build());
+    REDSTONE = register("redstone", OreComponent.builder().block(Blocks.REDSTONE_ORE).spawnWeight(6).color(0xff1a31).type(OreType.DUST).harvestLevel(2).build());
+    DIAMOND = register("diamond", OreComponent.builder().block(Blocks.DIAMOND_ORE).spawnWeight(2).color(0x0fd3ff).type(OreType.GEM).harvestLevel(2).build());
+    EMERALD = register("emerald", OreComponent.builder().block(Blocks.EMERALD_ORE).spawnWeight(1).color(0x61ff63).type(OreType.GEM).harvestLevel(2).build());
     NETHER_GOLD = register("nether_gold", OreComponent.builder().block(Blocks.NETHER_GOLD_ORE).spawnWeight(8).color(0xffe761).type(OreType.METAL).build());
     NETHER_QUARTZ = register("nether_quartz", OreComponent.builder().block(Blocks.NETHER_QUARTZ_ORE).spawnWeight(10).color(0xfafcff).type(OreType.GEM).build());
     ANCIENT_DEBRIS = register("ancient_debris", OreComponent.builder().block(Blocks.ANCIENT_DEBRIS).spawnWeight(1).color(0x6d4426).type(OreType.NONMETAL).harvestLevel(3).build());

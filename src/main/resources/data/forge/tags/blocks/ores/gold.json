@@ -1,6 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#compoundores:compound_ore"
+    "compoundores:compound_ore_gold"
   ]
 }

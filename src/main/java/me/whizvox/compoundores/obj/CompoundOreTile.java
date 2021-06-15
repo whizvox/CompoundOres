@@ -5,6 +5,8 @@ import me.whizvox.compoundores.api.OreComponent;
 import me.whizvox.compoundores.api.OreComponentRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -62,6 +64,32 @@ public class CompoundOreTile extends TileEntity {
       tag.putString(TAG_SECONDARY_ORE, secondaryComponent.getRegistryName().toString());
     }
     return super.save(tag);
+  }
+
+  @Nullable
+  @Override
+  public SUpdateTileEntityPacket getUpdatePacket() {
+    CompoundNBT tag = new CompoundNBT();
+    save(tag);
+    return new SUpdateTileEntityPacket(getBlockPos(), 42, tag);
+  }
+
+  @Override
+  public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+    BlockState state = level.getBlockState(worldPosition);
+    load(state, pkt.getTag());
+  }
+
+  @Override
+  public CompoundNBT getUpdateTag() {
+    CompoundNBT tag = new CompoundNBT();
+    save(tag);
+    return tag;
+  }
+
+  @Override
+  public void handleUpdateTag(BlockState state, CompoundNBT tag) {
+    load(state, tag);
   }
 
 }

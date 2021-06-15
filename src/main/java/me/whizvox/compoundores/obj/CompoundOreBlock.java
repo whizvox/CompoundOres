@@ -1,17 +1,21 @@
 package me.whizvox.compoundores.obj;
 
+import me.whizvox.compoundores.api.CompoundOresObjects;
 import me.whizvox.compoundores.api.OreComponent;
 import me.whizvox.compoundores.helper.NBTHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -72,6 +76,30 @@ public class CompoundOreBlock extends OreBlock {
       }
     }
     return drops;
+  }
+
+  @Override
+  public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
+    TileEntity tile = world.getBlockEntity(pos);
+    if (tile instanceof CompoundOreTile) {
+      ItemStack stack = new ItemStack(CompoundOresObjects.compoundOreBlockItems.get(primaryComponent.getRegistryName()));
+      NBTHelper.writeOreComponent(stack, CompoundOreBlockItem.TAG_SECONDARY, ((CompoundOreTile) tile).getSecondaryComponent());
+      return stack;
+    }
+    return super.getPickBlock(state, target, world, pos, player);
+  }
+
+  @Override
+  public int getExpDrop(BlockState state, IWorldReader world, BlockPos pos, int fortune, int silktouch) {
+    TileEntity tile = world.getBlockEntity(pos);
+    int baseXpDrop = primaryComponent.getBlock().getExpDrop(state, world, pos, fortune, silktouch);
+    if (tile instanceof CompoundOreTile) {
+      OreComponent secondary = ((CompoundOreTile) tile).getSecondaryComponent();
+      if (secondary != null && !secondary.isEmpty()) {
+        return baseXpDrop + secondary.getBlock().getExpDrop(state, world, pos, fortune, silktouch);
+      }
+    }
+    return baseXpDrop;
   }
 
 }
