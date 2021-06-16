@@ -31,7 +31,7 @@ public class CompoundOreTileRenderer extends TileEntityRenderer<CompoundOreTile>
       for (Direction dir : Direction.values()) {
         BlockPos pos = tile.getBlockPos().relative(dir);
         if (!tile.getLevel().getBlockState(pos).isSolidRender(tile.getLevel(), pos)) {
-          int brightness = tile.getLevel().getLightEngine().getRawBrightness(tile.getBlockPos().relative(dir), 0);
+          int brightness = tile.getLevel().getMaxLocalRawBrightness(pos);
           RenderHelper.addFace(dir, stack.last().pose(), stack.last().normal(), vb, (secondary.getColor() << 8) | 0xFF, 1.0F, 1.0F, new Vector2f(0.0F, 1.0F), 1.0F, 1.0F, LightTexture.pack(brightness, brightness));
         }
       }

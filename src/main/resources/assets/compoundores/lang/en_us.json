@@ -10,6 +10,8 @@
   "message.compoundores.debugCommand.itemtags.noTags": "This item does not belong to any tags",
   "message.compoundores.debugCommand.blocktags.noBlock": "You are not looking at a block",
   "message.compoundores.debugCommand.blocktags.noTags": "This block does not belong to any tags",
+  "message.compoundores.debugCommand.cleararea.cleared": "%d blocks cleared",
+  "message.compoundores.debugCommand.cleararea.restored": "%d blocks restored",
 
   "oreComponent.compoundores.unspecified": "Unspecified",
   "oreComponent.compoundores.coal": "Coal",

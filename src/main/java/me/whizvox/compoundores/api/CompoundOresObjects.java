@@ -120,7 +120,7 @@ public class CompoundOresObjects {
       .configured(NoFeatureConfig.INSTANCE)
       .range(128)
       .squared()
-      .count(40);
+      .count(70);
     Registry.register(WorldGenRegistries.CONFIGURED_FEATURE, "compoundores:compound_ore", configuredFeature);
   }
 

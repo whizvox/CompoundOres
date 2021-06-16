@@ -3,6 +3,8 @@ package me.whizvox.compoundores.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.whizvox.compoundores.helper.WorldHelper;
+import me.whizvox.compoundores.obj.CompoundOreBlock;
+import me.whizvox.compoundores.util.COBlockSnapshot;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandException;
@@ -21,7 +23,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.Tags;
 
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CompoundOresDebugCommand {
@@ -49,7 +51,9 @@ public class CompoundOresDebugCommand {
         )
         .then(Commands.literal("cleararea")
           .requires(CompoundOresDebugCommand::shouldExecute)
-          .executes(CompoundOresDebugCommand::seeOres)
+          .executes(ctx -> seeOres(ctx, true))
+          .then(Commands.literal("allores").executes(ctx -> seeOres(ctx, false)))
+          .then(Commands.literal("restore").executes(CompoundOresDebugCommand::undoClearedArea))
         )
     );
   }
@@ -97,20 +101,41 @@ public class CompoundOresDebugCommand {
     return 1;
   }
 
-  private static int seeOres(CommandContext<CommandSource> ctx) {
+  private static Map<UUID, List<COBlockSnapshot>> deletedBlocks = new HashMap<>();
+
+  private static int undoClearedArea(CommandContext<CommandSource> ctx) {
+    PlayerEntity player = (PlayerEntity) ctx.getSource().getEntity();
+    UUID entityId = player.getUUID();
+    List<COBlockSnapshot> blocks = deletedBlocks.get(entityId);
+    int total = 0;
+    if (blocks != null) {
+      blocks.forEach(COBlockSnapshot::restore);
+      total += blocks.size();
+      deletedBlocks.remove(entityId);
+    }
+    player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.cleararea.restored", total), false);
+    return 1;
+  }
+
+  private static int seeOres(CommandContext<CommandSource> ctx, boolean onlyCompoundOres) {
     PlayerEntity player = (PlayerEntity) ctx.getSource().getEntity();
     World world = player.getCommandSenderWorld();
-    for (int x = -25; x <= 25; x++) {
-      for (int z = -25; z <= 25; z++) {
+    List<COBlockSnapshot> blocks = new ArrayList<>();
+    final int WIDTH = 25;
+    for (int x = -WIDTH; x <= WIDTH; x++) {
+      for (int z = -WIDTH; z <= WIDTH; z++) {
         for (int y = 0; y < player.blockPosition().getY(); y++) {
           BlockPos pos = player.blockPosition().offset(x, -y, z);
           Block block = world.getBlockState(pos).getBlock();
-          if (Tags.Blocks.STONE.contains(block) || Tags.Blocks.SAND.contains(block) || Tags.Blocks.GRAVEL.contains(block) || Tags.Blocks.DIRT.contains(block)) {
+          if (onlyCompoundOres ? !(block instanceof CompoundOreBlock) : !Tags.Blocks.ORES.contains(block)) {
+            blocks.add(COBlockSnapshot.create(world, pos));
             world.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
           }
         }
       }
     }
+    deletedBlocks.put(player.getUUID(), blocks);
+    player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.cleararea.cleared", blocks.size()), false);
     return 1;
   }
 
