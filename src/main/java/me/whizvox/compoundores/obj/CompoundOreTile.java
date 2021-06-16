@@ -24,7 +24,7 @@ public class CompoundOreTile extends TileEntity {
   private OreComponent secondaryComponent;
 
   public CompoundOreTile() {
-    super(CompoundOresObjects.compoundOreTileType);
+    super(CompoundOresObjects.tileEntityType);
   }
 
   public CompoundOreTile(OreComponent secondaryComponent) {

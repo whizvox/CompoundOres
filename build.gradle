@@ -12,7 +12,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = 'dev-20200614'
+version = 'dev-20200616'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 

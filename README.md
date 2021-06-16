@@ -14,7 +14,6 @@ the version string includes `dev` or `alpha`, then that's a good sign not to use
 
 (higher up the list = higher priority)
 
-* Have the compound ores generate in the world
 * Allow ore components to be defined via datapacks rather than hardcoding them
 * Allow the end user to configure world generation
 * Test compatibility with other mods

@@ -139,7 +139,6 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     public OreComponent build() {
       return new OreComponent(block, type, color, destroySpeed, blastResistance, harvestLevel, spawnWeight);
     }
-
   }
 
 }

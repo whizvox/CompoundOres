@@ -4,18 +4,22 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import me.whizvox.compoundores.helper.WorldHelper;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.World;
+import net.minecraftforge.common.Tags;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,6 +46,10 @@ public class CompoundOresDebugCommand {
         .then(Commands.literal("blocktags")
           .requires(CompoundOresDebugCommand::shouldExecute)
           .executes(CompoundOresDebugCommand::blockTags)
+        )
+        .then(Commands.literal("cleararea")
+          .requires(CompoundOresDebugCommand::shouldExecute)
+          .executes(CompoundOresDebugCommand::seeOres)
         )
     );
   }
@@ -85,6 +93,23 @@ public class CompoundOresDebugCommand {
             .withStyle(TextFormatting.GREEN)
         ), false
       );
+    }
+    return 1;
+  }
+
+  private static int seeOres(CommandContext<CommandSource> ctx) {
+    PlayerEntity player = (PlayerEntity) ctx.getSource().getEntity();
+    World world = player.getCommandSenderWorld();
+    for (int x = -25; x <= 25; x++) {
+      for (int z = -25; z <= 25; z++) {
+        for (int y = 0; y < player.blockPosition().getY(); y++) {
+          BlockPos pos = player.blockPosition().offset(x, -y, z);
+          Block block = world.getBlockState(pos).getBlock();
+          if (Tags.Blocks.STONE.contains(block) || Tags.Blocks.SAND.contains(block) || Tags.Blocks.GRAVEL.contains(block) || Tags.Blocks.DIRT.contains(block)) {
+            world.setBlock(pos, Blocks.AIR.defaultBlockState(), 2);
+          }
+        }
+      }
     }
     return 1;
   }

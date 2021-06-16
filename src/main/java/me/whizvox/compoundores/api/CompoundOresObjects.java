@@ -4,6 +4,7 @@ import me.whizvox.compoundores.CompoundOres;
 import me.whizvox.compoundores.obj.CompoundOreBlock;
 import me.whizvox.compoundores.obj.CompoundOreBlockItem;
 import me.whizvox.compoundores.obj.CompoundOreTile;
+import me.whizvox.compoundores.world.feature.CompoundOreFeature;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -11,6 +12,11 @@ import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.WorldGenRegistries;
+import net.minecraft.world.gen.feature.ConfiguredFeature;
+import net.minecraft.world.gen.feature.Feature;
+import net.minecraft.world.gen.feature.NoFeatureConfig;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -32,10 +38,11 @@ public class CompoundOresObjects {
 
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public static Map<ResourceLocation, CompoundOreBlock> compoundOreBlocks;
-  public static Map<ResourceLocation, CompoundOreBlockItem> compoundOreBlockItems;
-  public static TileEntityType<CompoundOreTile> compoundOreTileType;
-
+  public static Map<ResourceLocation, CompoundOreBlock> blocks;
+  public static Map<ResourceLocation, CompoundOreBlockItem> blockItems;
+  public static CompoundOreFeature feature;
+  public static ConfiguredFeature<?, ?> configuredFeature;
+  public static TileEntityType<CompoundOreTile> tileEntityType;
   private static Item oresCategoryIcon;
 
   public static Item getOresCategoryIcon() {
@@ -72,33 +79,49 @@ public class CompoundOresObjects {
           .strength(oreComp.getDestroySpeed(), oreComp.getBlastResistance())
           .harvestLevel(oreComp.getHarvestLevel()), oreComp);
         registerBlock("compound_ore_" + oreComp.getRegistryName().getPath(), block);
+        LOGGER.debug("Registered compound ore block {} for component {}", block.getRegistryName(), oreComp.getRegistryName());
         tempCompOres.put(oreComp.getRegistryName(), block);
       }
     });
-    compoundOreBlocks = Collections.unmodifiableMap(tempCompOres);
-    LOGGER.info("Registered {} total compound ore blocks", compoundOreBlocks.size());
+    blocks = Collections.unmodifiableMap(tempCompOres);
+    LOGGER.info("Registered {} total compound ore blocks", blocks.size());
   }
 
   @SubscribeEvent
   public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
-    CompoundOres.LOGGER.info("REGISTERING ITEMS");
     Map<ResourceLocation, CompoundOreBlockItem> tempComp = new HashMap<>();
+    // register items alphabetically so it looks neat in the creative menu and JEI
     OreComponentRegistry.instance.getSortedValues().forEach(oreComp -> {
       final ResourceLocation key = oreComp.getRegistryName();
-      CompoundOreBlockItem item = new CompoundOreBlockItem(compoundOreBlocks.get(key), new Item.Properties().tab(CompoundOres.ORES_CATEGORY));
+      CompoundOreBlockItem item = new CompoundOreBlockItem(blocks.get(key), new Item.Properties().tab(CompoundOres.ORES_CATEGORY));
       if (oresCategoryIcon == null) {
         oresCategoryIcon = item;
       }
       registerItem("compound_ore_" + oreComp.getRegistryName().getPath(), item);
+      LOGGER.debug("Registered compound ore block item {} for component {}", item.getRegistryName(), key);
       tempComp.put(key, item);
     });
-    compoundOreBlockItems = Collections.unmodifiableMap(tempComp);
+    blockItems = Collections.unmodifiableMap(tempComp);
   }
 
-  @SubscribeEvent
+  @SubscribeEvent(priority = EventPriority.NORMAL)
   public static void onRegisterTileTypes(final RegistryEvent.Register<TileEntityType<?>> event) {
-    CompoundOres.LOGGER.info("REGISTERING ITEMS");
-    compoundOreTileType = registerTileType("compound_ore", CompoundOreTile::new, compoundOreBlocks.values().toArray(new Block[0]));
+    tileEntityType = registerTileType("compound_ore", CompoundOreTile::new, blocks.values().toArray(new Block[0]));
+    CompoundOres.LOGGER.debug("Registered base compound ore tile entity type");
+  }
+
+  @SubscribeEvent(priority = EventPriority.LOW)
+  public static void onRegisterFeatures(final RegistryEvent.Register<Feature<?>> event) {
+    feature = new CompoundOreFeature();
+    feature.setRegistryName(CompoundOres.MOD_ID, "compound_ore");
+    event.getRegistry().register(feature);
+
+    configuredFeature = feature
+      .configured(NoFeatureConfig.INSTANCE)
+      .range(128)
+      .squared()
+      .count(40);
+    Registry.register(WorldGenRegistries.CONFIGURED_FEATURE, "compoundores:compound_ore", configuredFeature);
   }
 
 }

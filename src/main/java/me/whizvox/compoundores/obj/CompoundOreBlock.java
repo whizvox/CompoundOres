@@ -82,7 +82,7 @@ public class CompoundOreBlock extends OreBlock {
   public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player) {
     TileEntity tile = world.getBlockEntity(pos);
     if (tile instanceof CompoundOreTile) {
-      ItemStack stack = new ItemStack(CompoundOresObjects.compoundOreBlockItems.get(primaryComponent.getRegistryName()));
+      ItemStack stack = new ItemStack(CompoundOresObjects.blockItems.get(primaryComponent.getRegistryName()));
       NBTHelper.writeOreComponent(stack, CompoundOreBlockItem.TAG_SECONDARY, ((CompoundOreTile) tile).getSecondaryComponent());
       return stack;
     }
