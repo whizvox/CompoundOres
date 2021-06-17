@@ -14,14 +14,10 @@ import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 public class CompoundOreFeature extends Feature<NoFeatureConfig> {
-
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public CompoundOreFeature() {
     super(NoFeatureConfig.CODEC);
@@ -31,7 +27,6 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
   public boolean place(ISeedReader world, ChunkGenerator chunkGenerator, Random rand, BlockPos rootPos, NoFeatureConfig config) {
     OreComponent oreComp = OreComponentRegistry.instance.getComponentFromBlock(world.getBlockState(rootPos).getBlock());
     if (oreComp != null && !oreComp.isEmpty()) {
-      LOGGER.debug("COMPOUND ORE VEIN GENERATED AT {}", rootPos);
       BlockState compOreState = CompoundOresObjects.blocks.get(oreComp.getRegistryName()).defaultBlockState();
       // perform a breadth-first search to replace all found ores with compound ores
       Queue<BlockPos> queue = new ArrayDeque<>();

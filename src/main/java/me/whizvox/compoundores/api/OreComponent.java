@@ -31,7 +31,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
   }
 
   public final boolean isEmpty() {
-    return block.is(Blocks.AIR);
+    return block.is(Blocks.AIR) || getRegistryName() == null;
   }
 
   public Block getBlock() {

@@ -1,14 +1,22 @@
 package me.whizvox.compoundores.api;
 
 import me.whizvox.compoundores.CompoundOres;
+import me.whizvox.compoundores.config.CompoundOresConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OreComponents {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static OreComponent
       // Vanilla ores
@@ -43,7 +51,10 @@ public class OreComponents {
       DIMENSIONAL_SHARD;
 
   private static boolean initialized = false;
-  public static void registerAll() {
+  private static List<OreComponent> exceptionsList = null;
+  private static boolean whitelistExceptions;
+
+  static void registerAll() {
     if (initialized) {
       return;
     }
@@ -81,6 +92,28 @@ public class OreComponents {
 
   private static OreComponent register(String name, OreComponent comp) {
     comp.setRegistryName(CompoundOres.MOD_ID, name);
+    if (exceptionsList == null) {
+      exceptionsList = CompoundOresConfig.COMMON.componentsExceptions();
+      whitelistExceptions = CompoundOresConfig.COMMON.componentsWhitelist();
+      if (whitelistExceptions && exceptionsList.isEmpty()) {
+        LOGGER.warn("An empty whitelist was configured. If you don't want any components registered, set registerDefaultComponents to false. Reverting to empty blacklist instead");
+        whitelistExceptions = false;
+      }
+      if (whitelistExceptions) {
+        LOGGER.debug("A whitelist has been established for registering components: [{}]", exceptionsList.stream().map(c -> c.getRegistryName().toString()).collect(Collectors.joining(", ")));
+      } else {
+        if (exceptionsList.isEmpty()) {
+          LOGGER.debug("An empty blacklist has been established for registering components");
+        } else {
+          LOGGER.debug("A blacklist has been established for registering components: [{}]", exceptionsList.stream().map(c -> c.getRegistryName().toString()).collect(Collectors.joining(", ")));
+        }
+      }
+    }
+    if ((whitelistExceptions && !exceptionsList.contains(comp)) || (!whitelistExceptions && exceptionsList.contains(comp))) {
+      LOGGER.debug("Ore component {} was prevented from being registered (not on whitelist or blacklisted)", comp.getRegistryName());
+      return OreComponent.EMPTY;
+    }
+    LOGGER.debug("Registering ore component {} (block={}, weight={})", comp.getRegistryName(), comp.getBlock().getRegistryName(), comp.getSpawnWeight());
     OreComponentRegistry.instance.register(comp);
     return comp;
   }

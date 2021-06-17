@@ -1,6 +1,7 @@
 package me.whizvox.compoundores.api;
 
 import me.whizvox.compoundores.CompoundOres;
+import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.util.RegistryWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
@@ -10,12 +11,17 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   public static OreComponentRegistry instance;
 
@@ -26,6 +32,16 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   private OreComponentRegistry(IForgeRegistry<OreComponent> registry) {
     super(registry);
+  }
+
+  @Override
+  @Nonnull
+  public OreComponent getValue(ResourceLocation key) {
+    OreComponent value = super.getValue(key);
+    if (value == null) {
+      return OreComponent.EMPTY;
+    }
+    return value;
   }
 
   public List<OreComponent> getSortedValues() {
@@ -50,14 +66,20 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public static void onNewRegistry(RegistryEvent.NewRegistry event) {
-    CompoundOres.LOGGER.info("CREATING ORE COMPONENT REGISTRY");
+    LOGGER.info("Creating ore component registry");
     instance = new OreComponentRegistry(new RegistryBuilder<OreComponent>()
       .setName(new ResourceLocation(CompoundOres.MOD_ID, "ore_components"))
       .setType(OreComponent.class)
       .create()
     );
-    CompoundOres.LOGGER.info("REGISTERING DEFAULT ORE COMPONENTS");
-    OreComponents.registerAll();
+    if (CompoundOresConfig.COMMON.registerDefaultComponents()) {
+      LOGGER.debug("Registering default ore components");
+      OreComponents.registerAll();
+    } else {
+      LOGGER.warn("Configured to explicitly NOT register any default components. If you feel this was in error, " +
+        "please change \"compreg/registerDefaultComponents\" in \"config/compoundores-common.toml\" to true");
+    }
+
     List<OreComponent> components = new ArrayList<>(instance.getValues());
     components.sort(OreComponent::compareTo);
     instance.sortedComponents = Collections.unmodifiableList(components);
