@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 
 public class CompoundOresCommonConfig {
 
+  private final ForgeConfigSpec.BooleanValue mRegisterComponentsFromDirectory;
+  private final ForgeConfigSpec.BooleanValue mIgnoreBadComponents;
+  private final ForgeConfigSpec.BooleanValue mDirectoryRegistrationFailLoadBackup;
+  private final ForgeConfigSpec.BooleanValue mGenerateComponentsNotFound;
   private final ForgeConfigSpec.BooleanValue mRegisterDefaultComponents;
   private final ForgeConfigSpec.BooleanValue mGenerateCompoundOres;
   private final ForgeConfigSpec.IntValue mSpawnChecks;
@@ -28,9 +32,22 @@ public class CompoundOresCommonConfig {
   CompoundOresCommonConfig() {
     ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
     builder.comment("Component registration settings").push("registration");
+    mRegisterComponentsFromDirectory = builder
+      .comment("Whether to register all components found within {instance_path}/compoundores/components")
+      .define("registerComponentsFromDirectory", true);
+    mIgnoreBadComponents = builder
+      .comment("Whether to skip over badly-defined or malformed components during directory registration",
+        "If set to false and a bad component is encountered, the mod will refuse to load")
+      .define("ignoreBadComponents", true);
+    mDirectoryRegistrationFailLoadBackup = builder
+      .comment("Whether to instead load hardcoded default ore components in the event of a crash during directory registration")
+      .define("directoryRegistrationFailLoadBackup", true);
+    mGenerateComponentsNotFound = builder
+      .comment("Whether to create JSON files for all components in the event that none were found during directory registration")
+      .define("generateComponentsNotFound", true);
     mRegisterDefaultComponents = builder
-      .comment("Whether to allow the Compound Ores mod to register all of its default ore components",
-        "Do NOT change this unless you are absolutely sure you know what you're doing!")
+      .comment("Whether to allow the Compound Ores mod to register all of its hardcoded default ore components",
+        "This will be ignored if registerComponentsFromDirectory is set to true")
       .define("registerDefaultComponents", true);
     mComponentsWhitelist = builder
       .comment("Whether to treat componentsExceptions as a whitelist or a blacklist")
@@ -69,6 +86,22 @@ public class CompoundOresCommonConfig {
     builder.pop();
 
     configSpec = builder.build();
+  }
+
+  public boolean registerComponentsFromDirectory() {
+    return mRegisterComponentsFromDirectory.get();
+  }
+
+  public boolean ignoreBadComponents() {
+    return mIgnoreBadComponents.get();
+  }
+
+  public boolean directoryRegistrationFailLoadBackup() {
+    return mDirectoryRegistrationFailLoadBackup.get();
+  }
+
+  public boolean generateComponentsNotFound() {
+    return mGenerateComponentsNotFound.get();
   }
 
   public boolean registerDefaultComponents() {

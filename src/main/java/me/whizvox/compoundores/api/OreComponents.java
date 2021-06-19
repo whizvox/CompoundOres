@@ -54,7 +54,7 @@ public class OreComponents {
   private static List<OreComponent> exceptionsList = null;
   private static boolean whitelistExceptions;
 
-  static void registerAll() {
+  static void registerDefaults() {
     if (initialized) {
       return;
     }
@@ -68,7 +68,7 @@ public class OreComponents {
     EMERALD = register("emerald", OreComponent.builder().block(Blocks.EMERALD_ORE).spawnWeight(1).color(0x61ff63).type(OreType.GEM).harvestLevel(2).build());
     NETHER_GOLD = register("nether_gold", OreComponent.builder().block(Blocks.NETHER_GOLD_ORE).spawnWeight(8).color(0xffe761).type(OreType.METAL).build());
     NETHER_QUARTZ = register("nether_quartz", OreComponent.builder().block(Blocks.NETHER_QUARTZ_ORE).spawnWeight(10).color(0xfafcff).type(OreType.GEM).build());
-    ANCIENT_DEBRIS = register("ancient_debris", OreComponent.builder().block(Blocks.ANCIENT_DEBRIS).spawnWeight(1).color(0x6d4426).type(OreType.NONMETAL).harvestLevel(3).build());
+    ANCIENT_DEBRIS = register("ancient_debris", OreComponent.builder().block(Blocks.ANCIENT_DEBRIS).spawnWeight(1).destroySpeed(30.0F).resistance(1200.0F).color(0x6d4426).type(OreType.NONMETAL).harvestLevel(3).build());
     COPPER = registerFirstInOreTag("copper", OreComponent.builder().spawnWeight(9).color(0xd77233).type(OreType.METAL).harvestLevel(1));
     TIN = registerFirstInOreTag("tin", OreComponent.builder().spawnWeight(5).color(0xc3d2d5).type(OreType.METAL).harvestLevel(1));
     ALUMINUM = registerFirstInOreTag("aluminum", OreComponent.builder().spawnWeight(5).color(0x743911).type(OreType.METAL).harvestLevel(1));
@@ -90,7 +90,7 @@ public class OreComponents {
     initialized = true;
   }
 
-  private static OreComponent register(String name, OreComponent comp) {
+  static OreComponent register(String name, OreComponent comp) {
     comp.setRegistryName(CompoundOres.MOD_ID, name);
     if (exceptionsList == null) {
       exceptionsList = CompoundOresConfig.COMMON.componentsExceptions();
@@ -118,7 +118,7 @@ public class OreComponents {
     return comp;
   }
 
-  private static OreComponent registerFirstInTag(String name, String tagName, OreComponent.Builder compBuilder) {
+  static OreComponent registerFirstInTag(String name, String tagName, OreComponent.Builder compBuilder) {
     ITag<Block> tag = BlockTags.getAllTags().getTag(new ResourceLocation(tagName));
     if (tag == null || tag.getValues().isEmpty()) {
       return OreComponent.EMPTY;
@@ -126,11 +126,11 @@ public class OreComponents {
     return register(name, compBuilder.block(tag.getValues().get(0)).build());
   }
 
-  private static OreComponent registerFirstInOreTag(String tagOreName, OreComponent.Builder compBuilder) {
+  static OreComponent registerFirstInOreTag(String tagOreName, OreComponent.Builder compBuilder) {
     return registerFirstInTag(tagOreName, "forge:ores/" + tagOreName, compBuilder);
   }
 
-  private static OreComponent registerFromBlockName(String blockName, String compName, OreComponent.Builder compBuilder) {
+  static OreComponent registerFromBlockName(String blockName, String compName, OreComponent.Builder compBuilder) {
     Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName));
     if (block == null || block.is(Blocks.AIR)) {
       return OreComponent.EMPTY;
