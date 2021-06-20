@@ -39,8 +39,13 @@ public class OreComponents {
       PLATINUM,
       SULFUR,
       FLUORITE,
+      YELLORIUM,
       // RFToolsBase
-      DIMENSIONAL_SHARD;
+      DIMENSIONAL_SHARD,
+      // Powah
+      URANINITE_POOR,
+      URANINITE,
+      URANINITE_DENSE;
 
   private static boolean initialized = false;
 
@@ -72,22 +77,36 @@ public class OreComponents {
     SAPPHIRE = registerFirstInOreTag("sapphire", OreComponent.builder().spawnWeight(2).color(0x3b5cf1).type(OreType.GEM).harvestLevel(2));
     RUBY = registerFirstInOreTag("ruby", OreComponent.builder().spawnWeight(2).color(0xff2b1f).type(OreType.GEM).harvestLevel(2));
     IRIDIUM = registerFirstInOreTag("iridium", OreComponent.builder().spawnWeight(1).color(0xffe1f9).type(OreType.METAL).harvestLevel(3));
-    PLATINUM = registerFirstInOreTag("iridium", OreComponent.builder().spawnWeight(1).color(0xadadad).type(OreType.METAL).harvestLevel(3));
+    PLATINUM = registerFirstInOreTag("platinum", OreComponent.builder().spawnWeight(1).color(0xadadad).type(OreType.METAL).harvestLevel(3));
     SULFUR = registerFirstInOreTag("sulfur", OreComponent.builder().spawnWeight(7).color(0xddb82c).type(OreType.GEM).harvestLevel(2));
     FLUORITE = registerFirstInOreTag("fluorite", OreComponent.builder().spawnWeight(3).color(0xe2efa3).type(OreType.GEM).harvestLevel(2));
+    YELLORIUM = registerFirstInOreTag("yellorium", OreComponent.builder().spawnWeight(2).harvestLevel(2));
     DIMENSIONAL_SHARD = registerFromBlockName("dimensional_shard", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().spawnWeight(3).color(0xdfebf7).type(OreType.GEM).harvestLevel(1));
+    URANINITE_POOR = registerFromBlockName("uraninite_poor", "powah:uraninite_ore_dense", OreComponent.builder().spawnWeight(5).harvestLevel(2));
+    URANINITE = registerFromBlockName("uraninite", "powah:uraninite_ore", OreComponent.builder().spawnWeight(3).harvestLevel(2));
+    URANINITE_DENSE = registerFromBlockName("uraninite_dense", "powah:uraninite_ore_dense", OreComponent.builder().spawnWeight(1).harvestLevel(2));
 
     initialized = true;
+  }
+
+  private static boolean shouldWrap(ResourceLocation key) {
+    return OreComponentRegistry.getInstance().containsKey(key);
   }
 
   // Public helpers for any mod to use
 
   public static OreComponent register(ResourceLocation name, OreComponent comp) {
+    if (shouldWrap(name)) {
+      return wrap(name);
+    }
     comp.setRegistryName(name);
     return OreComponentRegistry.getInstance().registerChecked(comp);
   }
 
   public static OreComponent registerFirstInTag(ResourceLocation name, String tagName, OreComponent.Builder builder) {
+    if (shouldWrap(name)) {
+      return wrap(name);
+    }
     ITag<Block> tag = BlockTags.getAllTags().getTag(new ResourceLocation(tagName));
     if (tag == null || tag.getValues().isEmpty()) {
       return OreComponent.EMPTY;
@@ -100,6 +119,9 @@ public class OreComponents {
   }
 
   public static OreComponent registerFromBlockName(ResourceLocation name, String blockName, OreComponent.Builder builder) {
+    if (shouldWrap(name)) {
+      return wrap(name);
+    }
     Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName));
     if (block == null || block.is(Blocks.AIR)) {
       return OreComponent.EMPTY;
@@ -107,22 +129,34 @@ public class OreComponents {
     return register(name, builder.block(block).build());
   }
 
+  public static OreComponent wrap(ResourceLocation name) {
+    return OreComponentRegistry.getInstance().getValue(name);
+  }
+
   // Private helpers for this class's default ore components
 
   private static OreComponent register(String name, OreComponent comp) {
-    return register(new ResourceLocation(CompoundOres.MOD_ID, name), comp);
-  }
-
-  private static OreComponent registerFirstInTag(String name, String tagName, OreComponent.Builder builder) {
-    return registerFirstInTag(new ResourceLocation(CompoundOres.MOD_ID, name), tagName, builder);
+    final ResourceLocation key = new ResourceLocation(CompoundOres.MOD_ID, name);
+    if (shouldWrap(key)) {
+      return wrap(key);
+    }
+    return register(key, comp);
   }
 
   private static OreComponent registerFirstInOreTag(String tagOreName, OreComponent.Builder builder) {
+    final ResourceLocation key = new ResourceLocation(CompoundOres.MOD_ID, tagOreName);
+    if (shouldWrap(key)) {
+      return wrap(key);
+    }
     return registerFirstInOreTag(CompoundOres.MOD_ID, tagOreName, builder);
   }
 
   private static OreComponent registerFromBlockName(String name, String blockName, OreComponent.Builder builder) {
-    return registerFromBlockName(new ResourceLocation(CompoundOres.MOD_ID, name), blockName, builder);
+    final ResourceLocation key = new ResourceLocation(CompoundOres.MOD_ID, name);
+    if (shouldWrap(key)) {
+      return wrap(key);
+    }
+    return registerFromBlockName(key, blockName, builder);
   }
 
 }

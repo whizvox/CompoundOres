@@ -57,6 +57,10 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         return OreComponent.EMPTY;
       }
     }
+    if (containsKey(value.getRegistryName())) {
+      LOGGER.debug("Attempted to register more than 1 component with the same registry name: {}", value.getRegistryName());
+      return OreComponent.EMPTY;
+    }
     super.register(value);
     return value;
   }
