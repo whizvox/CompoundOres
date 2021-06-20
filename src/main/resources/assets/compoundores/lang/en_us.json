@@ -12,6 +12,7 @@
   "message.compoundores.debugCommand.blocktags.noTags": "This block does not belong to any tags",
   "message.compoundores.debugCommand.cleararea.cleared": "%d blocks cleared",
   "message.compoundores.debugCommand.cleararea.restored": "%d blocks restored",
+  "message.compoundores.debugCommand.generate.success": "Component JSONs successfully generated to %s",
 
   "oreComponent.compoundores.unspecified": "Unspecified",
   "oreComponent.compoundores.coal": "Coal",

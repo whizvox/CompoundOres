@@ -46,7 +46,7 @@ public class CompoundOreTile extends TileEntity {
   public void load(BlockState state, CompoundNBT tag) {
     if (tag.contains(TAG_SECONDARY_ORE)) {
       ResourceLocation key = new ResourceLocation(tag.getString(TAG_SECONDARY_ORE));
-      OreComponent loadedOreComp = OreComponentRegistry.instance.getValue(key);
+      OreComponent loadedOreComp = OreComponentRegistry.getInstance().getValue(key);
       if (loadedOreComp != null) {
         secondaryComponent = loadedOreComp;
       } else {

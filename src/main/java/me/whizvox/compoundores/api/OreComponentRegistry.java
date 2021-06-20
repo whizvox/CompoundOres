@@ -1,11 +1,10 @@
 package me.whizvox.compoundores.api;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import me.whizvox.compoundores.CompoundOres;
 import me.whizvox.compoundores.config.CompoundOresConfig;
-import me.whizvox.compoundores.config.OreComponentJsonCodec;
+import me.whizvox.compoundores.util.JsonHelper;
+import me.whizvox.compoundores.util.PathHelper;
 import me.whizvox.compoundores.util.RegistryWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
@@ -13,7 +12,6 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 import org.apache.commons.io.FilenameUtils;
@@ -23,19 +21,20 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   private static final Logger LOGGER = LogManager.getLogger();
 
-  public static OreComponentRegistry instance;
+  private List<ResourceLocation> registryExceptions;
+  private boolean whitelistExceptions;
 
   private List<OreComponent> sortedComponents;
   private TreeMap<Integer, OreComponent> weighed;
@@ -44,6 +43,28 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   private OreComponentRegistry(IForgeRegistry<OreComponent> registry) {
     super(registry);
+  }
+
+  public OreComponent registerChecked(OreComponent value) {
+    if (whitelistExceptions) {
+      if (!registryExceptions.contains(value.getRegistryName())) {
+        LOGGER.debug("Skipped registry of {} since it isn't on the whitelist", value.getRegistryName());
+        return OreComponent.EMPTY;
+      }
+    } else {
+      if (registryExceptions.contains(value.getRegistryName())) {
+        LOGGER.debug("Skipped registry of {} since it is on the blacklist", value.getRegistryName());
+        return OreComponent.EMPTY;
+      }
+    }
+    super.register(value);
+    return value;
+  }
+
+  @Override
+  public void register(OreComponent value) {
+    LOGGER.warn("Standard #register(OreComponent) method has been called. Should use #registerChecked(OreComponent) to respect the exceptions list");
+    super.register(value);
   }
 
   @Override
@@ -72,6 +93,8 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     return revBlockCompMap.get(block.getRegistryName());
   }
 
+  private static OreComponentRegistry instance;
+
   public static OreComponentRegistry getInstance() {
     return instance;
   }
@@ -85,50 +108,42 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       .create()
     );
 
-    boolean directoryComponentsRegistered = false;
-    boolean shouldGenerateDefaultJsons = false;
+    instance.registryExceptions = CompoundOresConfig.COMMON.componentsExceptions();
+    instance.whitelistExceptions = CompoundOresConfig.COMMON.componentsWhitelist();
+    if (instance.whitelistExceptions) {
+      if (instance.registryExceptions.isEmpty()) {
+        LOGGER.warn("An empty whitelist was detected for ore component registration. No components will be registered!");
+      } else {
+        LOGGER.info("A whitelist was detected for ore component registration: [{}]", instance.registryExceptions.stream().map(ResourceLocation::toString).collect(Collectors.joining(", ")));
+      }
+    } else {
+      if (instance.registryExceptions.isEmpty()) {
+        LOGGER.info("An empty blacklist was detected for ore component registration. All components will be registered");
+      } else {
+        LOGGER.info("A blacklist was detected for ore component registration: [{}]", instance.registryExceptions.stream().map(ResourceLocation::toString).collect(Collectors.joining(", ")));
+      }
+    }
+
     if (CompoundOresConfig.COMMON.registerComponentsFromDirectory()) {
-      Path dir = getComponentsDirectory();
+      final Path dir = PathHelper.COMPONENTS_DIR;
       try {
         int count = registerAllFromDirectory(dir);
         if (count > 0) {
-          directoryComponentsRegistered = true;
           LOGGER.info("{} new components registered from components directory: {}", count, dir);
         } else {
           LOGGER.warn("No components were found in the components directory: {}. Will load hardcoded values instead", dir);
-          if (CompoundOresConfig.COMMON.generateComponentsNotFound()) {
-            shouldGenerateDefaultJsons = true;
-          }
         }
       } catch (IOException e) {
         LOGGER.error("Could not read from components directory: " + dir + ". Will load backup hardcoded components instead", e);
       }
     }
-    if (!directoryComponentsRegistered) {
-      if (CompoundOresConfig.COMMON.registerDefaultComponents()) {
-        LOGGER.debug("Registering hardcoded default ore components");
-        int prevCount = instance.getValues().size();
-        OreComponents.registerDefaults();
-        LOGGER.info("{} new components registered from hardcoded default components", instance.getValues().size() - prevCount);
-      } else {
-        LOGGER.warn("No ore components have been registered by the Compound Ores mod");
-      }
-    }
-    if (shouldGenerateDefaultJsons && !instance.getValues().isEmpty()) {
-      LOGGER.debug("Configured to generate JSONs for all components");
-      final Path dir = getComponentsDirectory();
-      AtomicInteger count = new AtomicInteger(0);
-      instance.getValues().forEach(oreComp -> {
-        final Path genFilePath = dir.resolve(oreComp.getRegistryName().getPath() + ".json");
-        try (Writer out = Files.newBufferedWriter(genFilePath, StandardCharsets.UTF_8)) {
-          GSON.toJson(oreComp, out);
-          LOGGER.debug("Generated JSON for default ore component {} at {}", oreComp.getRegistryName(), genFilePath);
-          count.incrementAndGet();
-        } catch (IOException e) {
-          LOGGER.error("Could not generate JSON for default ore component: " + genFilePath, e);
-        }
-      });
-      LOGGER.info("Generated {} JSON files for default components", count.get());
+    if (CompoundOresConfig.COMMON.registerDefaultComponents()) {
+      LOGGER.debug("Registering default ore components");
+      int prevCount = instance.getValues().size();
+      OreComponents.registerDefaults();
+      LOGGER.info("{} new components registered from default components", instance.getValues().size() - prevCount);
+    } else {
+      LOGGER.warn("No ore components have been registered by the Compound Ores mod");
     }
 
     List<OreComponent> components = new ArrayList<>(instance.getValues());
@@ -144,21 +159,12 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     instance.revBlockCompMap = Collections.unmodifiableMap(revBlockCompMap);
   }
 
-  private static Path getComponentsDirectory() {
-    return FMLPaths.getOrCreateGameRelativePath(FMLPaths.GAMEDIR.get().resolve(CompoundOres.MOD_ID).resolve("components"), CompoundOres.MOD_ID);
-  }
-
-  private static final Gson GSON = new GsonBuilder()
-    .registerTypeAdapter(OreComponent.class, OreComponentJsonCodec.INSTANCE)
-    .setPrettyPrinting()
-    .create();
-
   private static int registerAllFromDirectory(Path dir) throws IOException {
     AtomicInteger count = new AtomicInteger(0);
     Files.walk(dir, 1).filter(p -> p.getFileName().toString().endsWith(".json")).forEach(p -> {
       String baseName = FilenameUtils.getBaseName(p.getFileName().toString());
       try (Reader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
-        OreComponent oreComp = GSON.fromJson(reader, OreComponent.class);
+        OreComponent oreComp = JsonHelper.GSON.fromJson(reader, OreComponent.class);
         oreComp.setRegistryName(CompoundOres.MOD_ID, baseName);
         instance.register(oreComp);
         LOGGER.debug("Registered new ore component from {}", p);

@@ -17,7 +17,7 @@ public class NBTHelper {
     CompoundNBT tag = getTag(stack);
     if (tag.contains(key)) {
       ResourceLocation oreCompKey = new ResourceLocation(tag.getString(key));
-      return OreComponentRegistry.instance.getValue(oreCompKey);
+      return OreComponentRegistry.getInstance().getValue(oreCompKey);
     }
     return null;
   }

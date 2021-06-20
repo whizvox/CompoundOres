@@ -1,4 +1,4 @@
-package me.whizvox.compoundores.config;
+package me.whizvox.compoundores.util;
 
 import com.google.gson.*;
 import me.whizvox.compoundores.api.OreComponent;

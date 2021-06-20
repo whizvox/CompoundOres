@@ -1,7 +1,5 @@
 package me.whizvox.compoundores.config;
 
-import me.whizvox.compoundores.api.OreComponent;
-import me.whizvox.compoundores.api.OreComponentRegistry;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 
@@ -14,8 +12,6 @@ public class CompoundOresCommonConfig {
 
   private final ForgeConfigSpec.BooleanValue mRegisterComponentsFromDirectory;
   private final ForgeConfigSpec.BooleanValue mIgnoreBadComponents;
-  private final ForgeConfigSpec.BooleanValue mDirectoryRegistrationFailLoadBackup;
-  private final ForgeConfigSpec.BooleanValue mGenerateComponentsNotFound;
   private final ForgeConfigSpec.BooleanValue mRegisterDefaultComponents;
   private final ForgeConfigSpec.BooleanValue mGenerateCompoundOres;
   private final ForgeConfigSpec.IntValue mSpawnChecks;
@@ -39,12 +35,6 @@ public class CompoundOresCommonConfig {
       .comment("Whether to skip over badly-defined or malformed components during directory registration",
         "If set to false and a bad component is encountered, the mod will refuse to load")
       .define("ignoreBadComponents", true);
-    mDirectoryRegistrationFailLoadBackup = builder
-      .comment("Whether to instead load hardcoded default ore components in the event of a crash during directory registration")
-      .define("directoryRegistrationFailLoadBackup", true);
-    mGenerateComponentsNotFound = builder
-      .comment("Whether to create JSON files for all components in the event that none were found during directory registration")
-      .define("generateComponentsNotFound", true);
     mRegisterDefaultComponents = builder
       .comment("Whether to allow the Compound Ores mod to register all of its hardcoded default ore components",
         "This will be ignored if registerComponentsFromDirectory is set to true")
@@ -96,14 +86,6 @@ public class CompoundOresCommonConfig {
     return mIgnoreBadComponents.get();
   }
 
-  public boolean directoryRegistrationFailLoadBackup() {
-    return mDirectoryRegistrationFailLoadBackup.get();
-  }
-
-  public boolean generateComponentsNotFound() {
-    return mGenerateComponentsNotFound.get();
-  }
-
   public boolean registerDefaultComponents() {
     return mRegisterDefaultComponents.get();
   }
@@ -116,24 +98,24 @@ public class CompoundOresCommonConfig {
     return mSpawnChecks.get();
   }
 
-  public List<OreComponent> componentsExceptions() {
-    return oreComponentsList(mComponentsExceptions);
+  public List<ResourceLocation> componentsExceptions() {
+    return resourceLocationList(mComponentsExceptions);
   }
 
   public boolean componentsWhitelist() {
     return mComponentsWhitelist.get();
   }
 
-  public List<OreComponent> primaryComponentsExceptions() {
-    return oreComponentsList(mPrimaryComponentsExceptions);
+  public List<ResourceLocation> primaryComponentsExceptions() {
+    return resourceLocationList(mPrimaryComponentsExceptions);
   }
 
   public boolean primaryComponentsWhitelist() {
     return mPrimaryComponentsWhitelist.get();
   }
 
-  public List<OreComponent> secondaryComponentsExceptions() {
-    return oreComponentsList(mSecondaryComponentsExceptions);
+  public List<ResourceLocation> secondaryComponentsExceptions() {
+    return resourceLocationList(mSecondaryComponentsExceptions);
   }
 
   public boolean secondaryComponentsWhitelist() {
@@ -144,8 +126,8 @@ public class CompoundOresCommonConfig {
     return mRegisterDebugCommand.get();
   }
 
-  private static List<OreComponent> oreComponentsList(ForgeConfigSpec.ConfigValue<List<? extends String>> value) {
-    return value.get().stream().map(s -> OreComponentRegistry.instance.getValue(new ResourceLocation(s))).collect(Collectors.toList());
+  private static List<ResourceLocation> resourceLocationList(ForgeConfigSpec.ConfigValue<List<? extends String>> value) {
+    return value.get().stream().map(ResourceLocation::new).collect(Collectors.toList());
   }
 
   public static ForgeConfigSpec.ConfigValue<List<? extends String>> defineResourceLocationList(ForgeConfigSpec.Builder builder, String path, Supplier<List<? extends String>> defaultValueSupplier) {

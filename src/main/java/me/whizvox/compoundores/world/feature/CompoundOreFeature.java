@@ -25,7 +25,7 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
 
   @Override
   public boolean place(ISeedReader world, ChunkGenerator chunkGenerator, Random rand, BlockPos rootPos, NoFeatureConfig config) {
-    OreComponent oreComp = OreComponentRegistry.instance.getComponentFromBlock(world.getBlockState(rootPos).getBlock());
+    OreComponent oreComp = OreComponentRegistry.getInstance().getComponentFromBlock(world.getBlockState(rootPos).getBlock());
     if (oreComp != null && !oreComp.isEmpty()) {
       BlockState compOreState = CompoundOresObjects.blocks.get(oreComp.getRegistryName()).defaultBlockState();
       // perform a breadth-first search to replace all found ores with compound ores
@@ -59,7 +59,7 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
     world.setBlock(pos, compOreState, 2);
     TileEntity tile = world.getBlockEntity(pos);
     if (tile instanceof CompoundOreTile) {
-      ((CompoundOreTile) tile).setSecondaryComponent(OreComponentRegistry.instance.getRandomComponent(rand));
+      ((CompoundOreTile) tile).setSecondaryComponent(OreComponentRegistry.getInstance().getRandomComponent(rand));
     }
   }
 

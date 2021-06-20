@@ -59,7 +59,7 @@ public class CompoundOreBlockItem extends BlockItem {
   @Override
   public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> items) {
     if (allowdedIn(group)) {
-      OreComponentRegistry.instance.getSortedValues().stream()
+      OreComponentRegistry.getInstance().getSortedValues().stream()
         // make sure either the entry is not empty nor its block is not the block specified by this item
         .filter(secondary -> !secondary.isEmpty() && !secondary.getBlock().is(((CompoundOreBlock) getBlock()).getPrimaryComponent().getBlock()))
         .forEach(secondary -> {
@@ -69,7 +69,6 @@ public class CompoundOreBlockItem extends BlockItem {
         }
       );
     }
-    // BlockEntityTag
   }
 
 }

@@ -74,7 +74,7 @@ public class CompoundOresObjects {
   @SubscribeEvent(priority = EventPriority.HIGH)
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     Map<ResourceLocation, CompoundOreBlock> tempCompOres = new HashMap<>();
-    OreComponentRegistry.instance.getSortedValues().forEach(oreComp -> {
+    OreComponentRegistry.getInstance().getSortedValues().forEach(oreComp -> {
       if (!oreComp.isEmpty()) {
         CompoundOreBlock block = new CompoundOreBlock(AbstractBlock.Properties.of(Material.STONE, oreComp.getBlock().defaultMaterialColor())
           .requiresCorrectToolForDrops()
@@ -94,7 +94,7 @@ public class CompoundOresObjects {
   public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
     Map<ResourceLocation, CompoundOreBlockItem> tempComp = new HashMap<>();
     // register items alphabetically so it looks neat in the creative menu and JEI
-    OreComponentRegistry.instance.getSortedValues().forEach(oreComp -> {
+    OreComponentRegistry.getInstance().getSortedValues().forEach(oreComp -> {
       final ResourceLocation key = oreComp.getRegistryName();
       CompoundOreBlockItem item = new CompoundOreBlockItem(blocks.get(key), new Item.Properties().tab(CompoundOres.ITEM_GROUP_ORES));
       registerItem("compound_ore_" + oreComp.getRegistryName().getPath(), item);

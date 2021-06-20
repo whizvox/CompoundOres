@@ -4,6 +4,7 @@ import me.whizvox.compoundores.api.CompoundOresObjects;
 import me.whizvox.compoundores.api.OreComponentRegistry;
 import me.whizvox.compoundores.command.CompoundOresCommands;
 import me.whizvox.compoundores.config.CompoundOresConfig;
+import me.whizvox.compoundores.network.CompoundOresNetwork;
 import me.whizvox.compoundores.render.CompoundOreTileRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
@@ -19,6 +20,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,13 +42,18 @@ public class CompoundOres {
   public CompoundOres() {
     CompoundOresConfig.register(ModLoadingContext.get());
 
-    IEventBus meBus = FMLJavaModLoadingContext.get().getModEventBus();
-    meBus.register(OreComponentRegistry.class);
-    meBus.register(CompoundOresObjects.class);
-    meBus.addListener(this::onClientSetup);
+    IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+    modBus.register(OreComponentRegistry.class);
+    modBus.register(CompoundOresObjects.class);
+    modBus.addListener(this::onClientSetup);
+    modBus.addListener(this::onCommonSetup);
 
     IEventBus forgeBus = MinecraftForge.EVENT_BUS;
     forgeBus.register(this);
+  }
+
+  private void onCommonSetup(final FMLCommonSetupEvent event) {
+    CompoundOresNetwork.registerPackets();
   }
 
   private void onClientSetup(final FMLClientSetupEvent event) {

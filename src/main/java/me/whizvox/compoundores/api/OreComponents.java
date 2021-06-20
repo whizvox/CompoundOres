@@ -1,22 +1,14 @@
 package me.whizvox.compoundores.api;
 
 import me.whizvox.compoundores.CompoundOres;
-import me.whizvox.compoundores.config.CompoundOresConfig;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class OreComponents {
-
-  private static final Logger LOGGER = LogManager.getLogger();
 
   public static OreComponent
       // Vanilla ores
@@ -51,8 +43,6 @@ public class OreComponents {
       DIMENSIONAL_SHARD;
 
   private static boolean initialized = false;
-  private static List<OreComponent> exceptionsList = null;
-  private static boolean whitelistExceptions;
 
   static void registerDefaults() {
     if (initialized) {
@@ -85,57 +75,54 @@ public class OreComponents {
     PLATINUM = registerFirstInOreTag("iridium", OreComponent.builder().spawnWeight(1).color(0xadadad).type(OreType.METAL).harvestLevel(3));
     SULFUR = registerFirstInOreTag("sulfur", OreComponent.builder().spawnWeight(7).color(0xddb82c).type(OreType.GEM).harvestLevel(2));
     FLUORITE = registerFirstInOreTag("fluorite", OreComponent.builder().spawnWeight(3).color(0xe2efa3).type(OreType.GEM).harvestLevel(2));
-    DIMENSIONAL_SHARD = registerFromBlockName("rftoolsbase:dimensionalshard_overworld", "dimensional_shard", OreComponent.builder().spawnWeight(3).color(0xdfebf7).type(OreType.GEM).harvestLevel(1));
+    DIMENSIONAL_SHARD = registerFromBlockName("dimensional_shard", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().spawnWeight(3).color(0xdfebf7).type(OreType.GEM).harvestLevel(1));
 
     initialized = true;
   }
 
-  static OreComponent register(String name, OreComponent comp) {
-    comp.setRegistryName(CompoundOres.MOD_ID, name);
-    if (exceptionsList == null) {
-      exceptionsList = CompoundOresConfig.COMMON.componentsExceptions();
-      whitelistExceptions = CompoundOresConfig.COMMON.componentsWhitelist();
-      if (whitelistExceptions && exceptionsList.isEmpty()) {
-        LOGGER.warn("An empty whitelist was configured. If you don't want any components registered, set registerDefaultComponents to false. Reverting to empty blacklist instead");
-        whitelistExceptions = false;
-      }
-      if (whitelistExceptions) {
-        LOGGER.debug("A whitelist has been established for registering components: [{}]", exceptionsList.stream().map(c -> c.getRegistryName().toString()).collect(Collectors.joining(", ")));
-      } else {
-        if (exceptionsList.isEmpty()) {
-          LOGGER.debug("An empty blacklist has been established for registering components");
-        } else {
-          LOGGER.debug("A blacklist has been established for registering components: [{}]", exceptionsList.stream().map(c -> c.getRegistryName().toString()).collect(Collectors.joining(", ")));
-        }
-      }
-    }
-    if ((whitelistExceptions && !exceptionsList.contains(comp)) || (!whitelistExceptions && exceptionsList.contains(comp))) {
-      LOGGER.debug("Ore component {} was prevented from being registered (not on whitelist or blacklisted)", comp.getRegistryName());
-      return OreComponent.EMPTY;
-    }
-    LOGGER.debug("Registering ore component {} (block={}, weight={})", comp.getRegistryName(), comp.getBlock().getRegistryName(), comp.getSpawnWeight());
-    OreComponentRegistry.instance.register(comp);
-    return comp;
+  // Public helpers for any mod to use
+
+  public static OreComponent register(ResourceLocation name, OreComponent comp) {
+    comp.setRegistryName(name);
+    return OreComponentRegistry.getInstance().registerChecked(comp);
   }
 
-  static OreComponent registerFirstInTag(String name, String tagName, OreComponent.Builder compBuilder) {
+  public static OreComponent registerFirstInTag(ResourceLocation name, String tagName, OreComponent.Builder builder) {
     ITag<Block> tag = BlockTags.getAllTags().getTag(new ResourceLocation(tagName));
     if (tag == null || tag.getValues().isEmpty()) {
       return OreComponent.EMPTY;
     }
-    return register(name, compBuilder.block(tag.getValues().get(0)).build());
+    return register(name, builder.block(tag.getValues().get(0)).build());
   }
 
-  static OreComponent registerFirstInOreTag(String tagOreName, OreComponent.Builder compBuilder) {
-    return registerFirstInTag(tagOreName, "forge:ores/" + tagOreName, compBuilder);
+  public static OreComponent registerFirstInOreTag(String namespace, String tagOreName, OreComponent.Builder builder) {
+    return registerFirstInTag(new ResourceLocation(namespace, tagOreName), "forge:ores/" + tagOreName, builder);
   }
 
-  static OreComponent registerFromBlockName(String blockName, String compName, OreComponent.Builder compBuilder) {
+  public static OreComponent registerFromBlockName(ResourceLocation name, String blockName, OreComponent.Builder builder) {
     Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockName));
     if (block == null || block.is(Blocks.AIR)) {
       return OreComponent.EMPTY;
     }
-    return register(compName, compBuilder.block(block).build());
+    return register(name, builder.block(block).build());
+  }
+
+  // Private helpers for this class's default ore components
+
+  private static OreComponent register(String name, OreComponent comp) {
+    return register(new ResourceLocation(CompoundOres.MOD_ID, name), comp);
+  }
+
+  private static OreComponent registerFirstInTag(String name, String tagName, OreComponent.Builder builder) {
+    return registerFirstInTag(new ResourceLocation(CompoundOres.MOD_ID, name), tagName, builder);
+  }
+
+  private static OreComponent registerFirstInOreTag(String tagOreName, OreComponent.Builder builder) {
+    return registerFirstInOreTag(CompoundOres.MOD_ID, tagOreName, builder);
+  }
+
+  private static OreComponent registerFromBlockName(String name, String blockName, OreComponent.Builder builder) {
+    return registerFromBlockName(new ResourceLocation(CompoundOres.MOD_ID, name), blockName, builder);
   }
 
 }
