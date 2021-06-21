@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "compoundores:block/compound_ore_nether_quartz"
+    "all": "compoundores:block/compound_ore_base/nether_quartz"
   }
 }

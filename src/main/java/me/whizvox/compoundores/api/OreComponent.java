@@ -10,19 +10,17 @@ import java.util.Objects;
 
 public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Comparable<OreComponent> {
 
-  public static final OreComponent EMPTY = new OreComponent(Blocks.AIR, OreType.NONMETAL, 0x0, 0.0F, 0.0F, 0, 0);
+  public static final OreComponent EMPTY = new OreComponent(Blocks.AIR, 0x0, 0.0F, 0.0F, 0, 0);
 
   private Block block;
-  private OreType type;
   private int color;
   private float destroySpeed;
   private float blastResistance;
   private int harvestLevel;
   private int spawnWeight;
 
-  private OreComponent(Block block, OreType type, int color, float destroySpeed, float blastResistance, int harvestLevel, int spawnWeight) {
+  private OreComponent(Block block, int color, float destroySpeed, float blastResistance, int harvestLevel, int spawnWeight) {
     this.block = block;
-    this.type = type;
     this.color = color;
     this.destroySpeed = destroySpeed;
     this.blastResistance = blastResistance;
@@ -36,10 +34,6 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
 
   public Block getBlock() {
     return block;
-  }
-
-  public OreType getType() {
-    return type;
   }
 
   public int getColor() {
@@ -93,7 +87,6 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
 
   public static class Builder {
     private Block block;
-    private OreType type;
     private int color;
     private float destroySpeed;
     private float blastResistance;
@@ -101,8 +94,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     private int spawnWeight;
     public Builder() {
       block = Blocks.AIR;
-      type = OreType.METAL;
-      color = 0x0;
+      color = 0xFFFFFF; // white
       destroySpeed = 3.0F;
       blastResistance = 3.0F;
       harvestLevel = 0;
@@ -110,10 +102,6 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     }
     public Builder block(Block block) {
       this.block = block;
-      return this;
-    }
-    public Builder type(OreType type) {
-      this.type = type;
       return this;
     }
     public Builder color(int color) {
@@ -137,7 +125,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
       return this;
     }
     public OreComponent build() {
-      return new OreComponent(block, type, color, destroySpeed, blastResistance, harvestLevel, spawnWeight);
+      return new OreComponent(block, color, destroySpeed, blastResistance, harvestLevel, spawnWeight);
     }
   }
 

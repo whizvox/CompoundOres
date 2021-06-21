@@ -2,7 +2,6 @@ package me.whizvox.compoundores.util;
 
 import com.google.gson.*;
 import me.whizvox.compoundores.api.OreComponent;
-import me.whizvox.compoundores.api.OreType;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
@@ -14,7 +13,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, JsonSerializer<OreComponent> {
 
@@ -25,7 +23,6 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
     JsonObject obj = json.getAsJsonObject();
     Block target = null;
     int weight;
-    OreType type = OreType.NONMETAL;
     int color = 0xFFFFFF;
     float destroySpeed = 3.0F;
     float blastResistance = 3.0F;
@@ -97,26 +94,6 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
     }
 
     // OPTIONAL
-    if (obj.has("type")) {
-      JsonElement typeElem = obj.get("type");
-      if (typeElem.isJsonPrimitive() && ((JsonPrimitive) typeElem).isString()) {
-        String typeStr = obj.get("type").getAsString();
-        type = null;
-        for (OreType oreType : OreType.values()) {
-          if (oreType.toString().equalsIgnoreCase(typeStr)) {
-            type = oreType;
-            break;
-          }
-        }
-        if (type == null) {
-          throw new JsonParseException("Unknown type: " + typeStr);
-        }
-      } else {
-        throw new JsonParseException("Type must be a string");
-      }
-    }
-
-    // OPTIONAL
     if (obj.has("color")) {
       JsonElement colorElem = obj.get("color");
       if (colorElem.isJsonPrimitive()) {
@@ -172,7 +149,6 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
       .block(target)
       .spawnWeight(weight)
       .color(color)
-      .type(type)
       .destroySpeed(destroySpeed)
       .resistance(blastResistance)
       .harvestLevel(harvestLevel)
@@ -194,9 +170,8 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
       obj.addProperty("harvestLevel", oreComp.getHarvestLevel());
     }
     if (oreComp.getColor() != 0xFFFFFF) {
-      obj.addProperty("color", oreComp.getColor());
+      obj.addProperty("color", Integer.toString(oreComp.getColor(), 16));
     }
-    obj.addProperty("type", oreComp.getType().toString().toLowerCase(Locale.ENGLISH));
     return obj;
   }
 
