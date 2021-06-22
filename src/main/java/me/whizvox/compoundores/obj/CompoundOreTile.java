@@ -1,22 +1,20 @@
 package me.whizvox.compoundores.obj;
 
 import me.whizvox.compoundores.api.CompoundOresObjects;
-import me.whizvox.compoundores.api.OreComponent;
-import me.whizvox.compoundores.api.OreComponentRegistry;
+import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 
-public class CompoundOreTile extends TileEntity {
+import static me.whizvox.compoundores.CompoundOres.LOGGER;
 
-  private static final Logger LOGGER = LogManager.getLogger();
+public class CompoundOreTile extends TileEntity {
 
   private static final String
     TAG_SECONDARY_ORE = "secondaryOre";

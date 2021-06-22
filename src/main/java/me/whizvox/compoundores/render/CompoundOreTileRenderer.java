@@ -2,7 +2,7 @@ package me.whizvox.compoundores.render;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import me.whizvox.compoundores.api.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.helper.RenderHelper;
 import me.whizvox.compoundores.obj.CompoundOreTile;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -50,23 +50,5 @@ public class CompoundOreTileRenderer extends TileEntityRenderer<CompoundOreTile>
       name -> new ResourceLocation(oreComp.getRegistryName().getNamespace(), "textures/component_overlays/" + oreComp.getRegistryName().getPath() + ".png")
     );
   }
-
-  /*private static final ResourceLocation
-    TEX_OVERLAY_DUST = new ResourceLocation("compoundores:textures/overlay_dust.png"),
-    TEX_OVERLAY_GEM = new ResourceLocation("compoundores:textures/overlay_gem.png"),
-    TEX_OVERLAY_METAL = new ResourceLocation("compoundores:textures/overlay_metal.png"),
-    TEX_OVERLAY_NONMETAL = new ResourceLocation("compoundores:textures/overlay_nonmetal.png");
-
-  private static ResourceLocation getTexture(OreType type) {
-    switch (type) {
-      case DUST:
-        return TEX_OVERLAY_DUST;
-      case GEM:
-        return TEX_OVERLAY_GEM;
-      case METAL:
-        return TEX_OVERLAY_METAL;
-    }
-    return TEX_OVERLAY_NONMETAL;
-  }*/
 
 }

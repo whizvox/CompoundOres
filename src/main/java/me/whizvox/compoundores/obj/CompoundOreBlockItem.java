@@ -1,7 +1,7 @@
 package me.whizvox.compoundores.obj;
 
-import me.whizvox.compoundores.api.OreComponent;
-import me.whizvox.compoundores.api.OreComponentRegistry;
+import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.helper.NBTHelper;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.BlockItem;
@@ -61,7 +61,7 @@ public class CompoundOreBlockItem extends BlockItem {
     if (allowdedIn(group)) {
       OreComponentRegistry.getInstance().getSortedValues().stream()
         // make sure either the entry is not empty nor its block is not the block specified by this item
-        .filter(secondary -> !secondary.isEmpty() && !secondary.getBlock().is(((CompoundOreBlock) getBlock()).getPrimaryComponent().getBlock()))
+        .filter(secondary -> !secondary.isEmpty() && secondary != ((CompoundOreBlock) getBlock()).getPrimaryComponent())
         .forEach(secondary -> {
           ItemStack stack = new ItemStack(this);
           NBTHelper.writeOreComponent(stack, TAG_SECONDARY, secondary);

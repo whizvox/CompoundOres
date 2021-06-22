@@ -2,7 +2,7 @@ package me.whizvox.compoundores.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.whizvox.compoundores.api.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponent;
 
 public class JsonHelper {
 

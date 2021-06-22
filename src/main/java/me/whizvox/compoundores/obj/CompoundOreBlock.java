@@ -1,7 +1,7 @@
 package me.whizvox.compoundores.obj;
 
 import me.whizvox.compoundores.api.CompoundOresObjects;
-import me.whizvox.compoundores.api.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.helper.NBTHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.OreBlock;
@@ -61,7 +61,7 @@ public class CompoundOreBlock extends OreBlock {
 
   @Override
   public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
-    List<ItemStack> drops = new ArrayList<>(primaryComponent.getBlock().getDrops(state, builder));
+    List<ItemStack> drops = new ArrayList<>(primaryComponent.getTarget().getResolvedTarget().getDrops(state, builder));
     TileEntity tile = builder.getOptionalParameter(LootParameters.BLOCK_ENTITY);
     if (tile == null) {
       Vector3d pos = builder.getOptionalParameter(LootParameters.ORIGIN);
@@ -72,7 +72,7 @@ public class CompoundOreBlock extends OreBlock {
     if (tile instanceof CompoundOreTile) {
       CompoundOreTile compOre = (CompoundOreTile) tile;
       if (compOre.getSecondaryComponent() != null && !compOre.getSecondaryComponent().isEmpty()) {
-        drops.addAll(((CompoundOreTile) tile).getSecondaryComponent().getBlock().getDrops(state, builder));
+        drops.addAll(compOre.getSecondaryComponent().getTarget().getResolvedTarget().getDrops(state, builder));
       }
     }
     return drops;
@@ -92,11 +92,11 @@ public class CompoundOreBlock extends OreBlock {
   @Override
   public int getExpDrop(BlockState state, IWorldReader world, BlockPos pos, int fortune, int silktouch) {
     TileEntity tile = world.getBlockEntity(pos);
-    int baseXpDrop = primaryComponent.getBlock().getExpDrop(state, world, pos, fortune, silktouch);
+    int baseXpDrop = primaryComponent.getTarget().getResolvedTarget().getExpDrop(state, world, pos, fortune, silktouch);
     if (tile instanceof CompoundOreTile) {
       OreComponent secondary = ((CompoundOreTile) tile).getSecondaryComponent();
       if (secondary != null && !secondary.isEmpty()) {
-        return baseXpDrop + secondary.getBlock().getExpDrop(state, world, pos, fortune, silktouch);
+        return baseXpDrop + secondary.getTarget().getResolvedTarget().getExpDrop(state, world, pos, fortune, silktouch);
       }
     }
     return baseXpDrop;

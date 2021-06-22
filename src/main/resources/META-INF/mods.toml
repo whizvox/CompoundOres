@@ -1,14 +1,14 @@
 modLoader="javafml"
 loaderVersion="[36,)"
 license="MIT License"
-issueTrackerURL="https://github.com/whizvox/CompoundOres"
+issueTrackerURL="https://github.com/whizvox/CompoundOres/issues"
 [[mods]]
     modId="compoundores"
     version="${file.jarVersion}"
     displayName="Compound Ores"
     #updateJSONURL="https://change.me.example.invalid/updates.json" #https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
-    #displayURL="https://whizvox.me/mcmods/compoundores.php"
-    #logoFile="compoundores.png"
+    displayURL="https://github.com/whizvox/CompoundOres/wiki"
+    logoFile="compoundores_logo.png"
     credits="Shoutouts to TheGreyGhost for his MinecraftByExample project and the guys on the MMD Discord"
     authors="whizvox"
     description='''

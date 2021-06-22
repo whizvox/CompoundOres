@@ -1,7 +1,7 @@
 package me.whizvox.compoundores.helper;
 
-import me.whizvox.compoundores.api.OreComponent;
-import me.whizvox.compoundores.api.OreComponentRegistry;
+import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;

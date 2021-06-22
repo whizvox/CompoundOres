@@ -1,9 +1,10 @@
 package me.whizvox.compoundores;
 
 import me.whizvox.compoundores.api.CompoundOresObjects;
-import me.whizvox.compoundores.api.OreComponentRegistry;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.command.CompoundOresCommands;
 import me.whizvox.compoundores.config.CompoundOresConfig;
+import me.whizvox.compoundores.helper.Markers;
 import me.whizvox.compoundores.network.CompoundOresNetwork;
 import me.whizvox.compoundores.render.CompoundOreTileRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -30,7 +31,7 @@ public class CompoundOres {
 
   public static final String MOD_ID = "compoundores";
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  public static final Logger LOGGER = LogManager.getLogger("CompoundOres");
 
   public static final ItemGroup ITEM_GROUP_ORES = new ItemGroup("compoundores.ores") {
     @Override
@@ -39,8 +40,16 @@ public class CompoundOres {
     }
   };
 
+  private boolean shouldGenerate;
+
   public CompoundOres() {
     CompoundOresConfig.register(ModLoadingContext.get());
+    shouldGenerate = CompoundOresConfig.COMMON.generateCompoundOres();
+    if (shouldGenerate) {
+      LOGGER.debug("Set to generate compound ores in world");
+    } else {
+      LOGGER.info("Configured to NOT generate any compound ores");
+    }
 
     IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
     modBus.register(OreComponentRegistry.class);
@@ -64,20 +73,17 @@ public class CompoundOres {
   @SubscribeEvent
   public void onRegisterCommands(final RegisterCommandsEvent event) {
     if (CompoundOresConfig.COMMON.registerDebugCommand()) {
-      LOGGER.info("Configured TO register /compores debug command");
+      LOGGER.info(Markers.SERVER, "Configured TO register /compores debug command");
       CompoundOresCommands.register(event.getDispatcher());
     } else {
-      LOGGER.debug("Configured to not register /compores debug command");
+      LOGGER.debug(Markers.SERVER, "Configured to not register /compores debug command");
     }
   }
 
   @SubscribeEvent
   public void onBiomeModify(final BiomeLoadingEvent event) {
-    if (CompoundOresConfig.COMMON.generateCompoundOres()) {
-      LOGGER.debug("Adding compound ore configured feature to world generation");
+    if (shouldGenerate) {
       event.getGeneration().getFeatures(GenerationStage.Decoration.UNDERGROUND_ORES).add(() -> CompoundOresObjects.configuredFeature);
-    } else {
-      LOGGER.info("Configured to NOT generate any compound ores");
     }
   }
 

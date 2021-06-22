@@ -1,7 +1,7 @@
-package me.whizvox.compoundores.api;
+package me.whizvox.compoundores.api.component;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
+import me.whizvox.compoundores.api.target.BlockTargets;
+import me.whizvox.compoundores.api.target.IBlockTarget;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
@@ -10,50 +10,50 @@ import java.util.Objects;
 
 public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Comparable<OreComponent> {
 
-  public static final OreComponent EMPTY = new OreComponent(Blocks.AIR, 0x0, 0.0F, 0.0F, 0, 0);
+  public static final OreComponent EMPTY = new OreComponent(IBlockTarget.NONE, 0xFFFFFF, 0.0F, 0.0F, 0, 0);
 
-  private Block block;
+  private IBlockTarget target;
   private int color;
-  private float destroySpeed;
-  private float blastResistance;
+  private float hardness;
+  private float resistance;
   private int harvestLevel;
-  private int spawnWeight;
+  private int weight;
 
-  private OreComponent(Block block, int color, float destroySpeed, float blastResistance, int harvestLevel, int spawnWeight) {
-    this.block = block;
+  private OreComponent(IBlockTarget target, int color, float hardness, float resistance, int harvestLevel, int weight) {
+    this.target = target;
     this.color = color;
-    this.destroySpeed = destroySpeed;
-    this.blastResistance = blastResistance;
+    this.hardness = hardness;
+    this.resistance = resistance;
     this.harvestLevel = harvestLevel;
-    this.spawnWeight = spawnWeight;
+    this.weight = weight;
   }
 
   public final boolean isEmpty() {
-    return block.is(Blocks.AIR) || getRegistryName() == null;
+    return this == EMPTY || target == IBlockTarget.NONE || getRegistryName() == null;
   }
 
-  public Block getBlock() {
-    return block;
+  public IBlockTarget getTarget() {
+    return target;
   }
 
   public int getColor() {
     return color;
   }
 
-  public float getDestroySpeed() {
-    return destroySpeed;
+  public float getHardness() {
+    return hardness;
   }
 
-  public float getBlastResistance() {
-    return blastResistance;
+  public float getResistance() {
+    return resistance;
   }
 
   public int getHarvestLevel() {
     return harvestLevel;
   }
 
-  public int getSpawnWeight() {
-    return spawnWeight;
+  public int getWeight() {
+    return weight;
   }
 
   public String getTranslationKey() {
@@ -86,29 +86,32 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
   }
 
   public static class Builder {
-    private Block block;
+    private IBlockTarget target;
     private int color;
     private float destroySpeed;
     private float blastResistance;
     private int harvestLevel;
     private int spawnWeight;
     public Builder() {
-      block = Blocks.AIR;
+      target = IBlockTarget.NONE;
       color = 0xFFFFFF; // white
       destroySpeed = 3.0F;
       blastResistance = 3.0F;
       harvestLevel = 0;
       spawnWeight = 1;
     }
-    public Builder block(Block block) {
-      this.block = block;
+    public Builder target(IBlockTarget target) {
+      this.target = target;
       return this;
+    }
+    public Builder target(Object... targets) {
+      return target(BlockTargets.create(targets));
     }
     public Builder color(int color) {
       this.color = color;
       return this;
     }
-    public Builder destroySpeed(float destroySpeed) {
+    public Builder hardness(float destroySpeed) {
       this.destroySpeed = destroySpeed;
       return this;
     }
@@ -120,12 +123,12 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
       this.harvestLevel = harvestLevel;
       return this;
     }
-    public Builder spawnWeight(int spawnWeight) {
+    public Builder weight(int spawnWeight) {
       this.spawnWeight = spawnWeight;
       return this;
     }
     public OreComponent build() {
-      return new OreComponent(block, color, destroySpeed, blastResistance, harvestLevel, spawnWeight);
+      return new OreComponent(target, color, destroySpeed, blastResistance, harvestLevel, spawnWeight);
     }
   }
 

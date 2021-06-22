@@ -1,6 +1,8 @@
 package me.whizvox.compoundores.api;
 
 import me.whizvox.compoundores.CompoundOres;
+import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.helper.NBTHelper;
 import me.whizvox.compoundores.obj.CompoundOreBlock;
@@ -28,16 +30,18 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
+
+import static me.whizvox.compoundores.CompoundOres.LOGGER;
+import static me.whizvox.compoundores.helper.Markers.REGISTRY;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CompoundOresObjects {
 
-  private static final Logger LOGGER = LogManager.getLogger();
   private static final ResourceLocation
     PREFERRED_ITEMGROUP_ICON_PRIMARY = new ResourceLocation("compoundores:coal"),
     PREFERRED_ITEMGROUP_ICON_SECONDARY = new ResourceLocation("compoundores:diamond");
@@ -71,23 +75,23 @@ public class CompoundOresObjects {
     return register(ForgeRegistries.ITEMS, name, item);
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGH)
+  @SubscribeEvent(priority = EventPriority.LOWEST) // make sure other mods have already registered their ores
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     Map<ResourceLocation, CompoundOreBlock> tempCompOres = new HashMap<>();
-    OreComponentRegistry.getInstance().getSortedValues().forEach(oreComp -> {
+    OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
       if (!oreComp.isEmpty()) {
-        CompoundOreBlock block = new CompoundOreBlock(AbstractBlock.Properties.of(Material.STONE, oreComp.getBlock().defaultMaterialColor())
+        CompoundOreBlock block = new CompoundOreBlock(AbstractBlock.Properties.of(Material.STONE, oreComp.getTarget().getResolvedTargets().stream().findFirst().get().defaultMaterialColor())
           .requiresCorrectToolForDrops()
           .harvestTool(ToolType.PICKAXE)
-          .strength(oreComp.getDestroySpeed(), oreComp.getBlastResistance())
+          .strength(oreComp.getHardness(), oreComp.getResistance())
           .harvestLevel(oreComp.getHarvestLevel()), oreComp);
         registerBlock("compound_ore_" + oreComp.getRegistryName().getPath(), block);
-        LOGGER.debug("Registered compound ore block {} for component {}", block.getRegistryName(), oreComp.getRegistryName());
+        LOGGER.debug(REGISTRY, "Registered compound ore block {} for component {}", block.getRegistryName(), oreComp.getRegistryName());
         tempCompOres.put(oreComp.getRegistryName(), block);
       }
     });
     blocks = Collections.unmodifiableMap(tempCompOres);
-    LOGGER.info("Registered {} total compound ore blocks", blocks.size());
+    LOGGER.info(REGISTRY, "Registered {} total compound ore blocks", blocks.size());
   }
 
   @SubscribeEvent
@@ -98,11 +102,11 @@ public class CompoundOresObjects {
       final ResourceLocation key = oreComp.getRegistryName();
       CompoundOreBlockItem item = new CompoundOreBlockItem(blocks.get(key), new Item.Properties().tab(CompoundOres.ITEM_GROUP_ORES));
       registerItem("compound_ore_" + oreComp.getRegistryName().getPath(), item);
-      LOGGER.debug("Registered compound ore block item {} for component {}", item.getRegistryName(), key);
+      LOGGER.debug(REGISTRY, "Registered compound ore block item {} for component {}", item.getRegistryName(), key);
       tempComp.put(key, item);
     });
     blockItems = Collections.unmodifiableMap(tempComp);
-    LOGGER.debug("Registered {} total compound ore block items", blockItems.size());
+    LOGGER.debug(REGISTRY, "Registered {} total compound ore block items", blockItems.size());
 
     if (oresItemGroupIcon.isEmpty() && !blockItems.isEmpty() && OreComponentRegistry.getInstance().getValues().size() > 1) {
       if (blockItems.containsKey(PREFERRED_ITEMGROUP_ICON_PRIMARY) && OreComponentRegistry.getInstance().containsKey(PREFERRED_ITEMGROUP_ICON_SECONDARY)) {
@@ -111,40 +115,41 @@ public class CompoundOresObjects {
         OreComponent secondary = OreComponentRegistry.getInstance().getValue(PREFERRED_ITEMGROUP_ICON_SECONDARY);
         NBTHelper.writeOreComponent(stack, CompoundOreBlockItem.TAG_SECONDARY, secondary);
         oresItemGroupIcon = stack;
-        LOGGER.debug("Set the preferred compound ore creative tab icon : {} / {}", PREFERRED_ITEMGROUP_ICON_PRIMARY, PREFERRED_ITEMGROUP_ICON_SECONDARY);
+        LOGGER.debug(REGISTRY, "Set the preferred compound ore creative tab icon : {} / {}", PREFERRED_ITEMGROUP_ICON_PRIMARY, PREFERRED_ITEMGROUP_ICON_SECONDARY);
       } else {
-        CompoundOreBlockItem blockItem = blockItems.values().stream().findFirst().get();
-        Optional<OreComponent> randSecondary = OreComponentRegistry.getInstance().getValues().stream().filter(c -> !c.getBlock().is(blockItem.getBlock())).findFirst();
-        if (randSecondary.isPresent()) {
+        CompoundOreBlockItem blockItem = blockItems.values().stream().findAny().get();
+        OreComponent randSecondary = OreComponentRegistry.getInstance().getValues().stream().filter(c -> c != ((CompoundOreBlock) blockItem.getBlock()).getPrimaryComponent()).findAny().get();
+        if (!randSecondary.isEmpty()) {
           ItemStack stack = new ItemStack(blockItem);
-          NBTHelper.writeOreComponent(stack, CompoundOreBlockItem.TAG_SECONDARY, randSecondary.get());
+          NBTHelper.writeOreComponent(stack, CompoundOreBlockItem.TAG_SECONDARY, randSecondary);
           oresItemGroupIcon = stack;
           LOGGER.debug(
+            REGISTRY,
             "Could not find preferred compound ore creative tab icon. Set it to {} / {} instead",
             ((CompoundOreBlock) blockItem.getBlock()).getPrimaryComponent().getRegistryName(),
-            randSecondary.get().getRegistryName()
+            randSecondary.getRegistryName()
           );
         }
       }
     }
     if (oresItemGroupIcon.isEmpty()) {
-      LOGGER.warn("Could not set an icon for the compound ores creative tab as there needs to be at least two registered components");
+      LOGGER.warn(REGISTRY, "Could not set an icon for the compound ores creative tab as there needs to be at least two registered components");
     }
   }
 
-  @SubscribeEvent(priority = EventPriority.NORMAL)
+  @SubscribeEvent
   public static void onRegisterTileTypes(final RegistryEvent.Register<TileEntityType<?>> event) {
     tileEntityType = registerTileType("compound_ore", CompoundOreTile::new, blocks.values().toArray(new Block[0]));
-    LOGGER.debug("Registered base compound ore tile entity type");
+    LOGGER.debug(REGISTRY, "Registered base compound ore tile entity type");
   }
 
-  @SubscribeEvent(priority = EventPriority.LOW)
+  @SubscribeEvent
   public static void onRegisterFeatures(final RegistryEvent.Register<Feature<?>> event) {
     if (CompoundOresConfig.COMMON.generateCompoundOres()) {
       feature = new CompoundOreFeature();
       feature.setRegistryName(CompoundOres.MOD_ID, "compound_ore");
       event.getRegistry().register(feature);
-      LOGGER.debug("Registered compound ore feature");
+      LOGGER.debug(REGISTRY, "Registered compound ore feature");
 
       configuredFeature = feature
         .configured(NoFeatureConfig.INSTANCE)
@@ -152,7 +157,7 @@ public class CompoundOresObjects {
         .squared()
         .count(CompoundOresConfig.COMMON.spawnChecks());
       Registry.register(WorldGenRegistries.CONFIGURED_FEATURE, "compoundores:compound_ore", configuredFeature);
-      LOGGER.debug("Registered configured compound ore feature");
+      LOGGER.debug(REGISTRY, "Registered configured compound ore feature");
     }
   }
 

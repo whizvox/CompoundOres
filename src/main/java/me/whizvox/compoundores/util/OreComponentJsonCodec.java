@@ -1,14 +1,11 @@
 package me.whizvox.compoundores.util;
 
 import com.google.gson.*;
-import me.whizvox.compoundores.api.OreComponent;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
+import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.target.BlockTargets;
+import me.whizvox.compoundores.api.target.IBlockTarget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -21,61 +18,33 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
   @Override
   public OreComponent deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
     JsonObject obj = json.getAsJsonObject();
-    Block target = null;
+    IBlockTarget target;
     int weight;
     int color = 0xFFFFFF;
-    float destroySpeed = 3.0F;
-    float blastResistance = 3.0F;
+    float hardness = 3.0F;
+    float resistance = 3.0F;
     int harvestLevel = 0;
 
     // REQUIRED
     if (obj.has("target")) {
       JsonElement targetElem = obj.get("target");
-      List<String> targetCandidates = new ArrayList<>();
-      if (targetElem.isJsonArray()) {
-        for (JsonElement targetCandidate : ((JsonArray) targetElem)) {
-          if (targetCandidate.isJsonPrimitive() && ((JsonPrimitive) targetCandidate).isString()) {
-            targetCandidates.add(targetCandidate.getAsString());
+      if (targetElem.isJsonPrimitive() && targetElem.getAsJsonPrimitive().isString()) {
+        target = BlockTargets.create(targetElem.getAsString());
+      } else if (targetElem.isJsonArray()) {
+        List<String> targetsList = new ArrayList<>();
+        targetElem.getAsJsonArray().forEach(elem -> {
+          if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isString()) {
+            targetsList.add(elem.getAsString());
           } else {
-            throw new JsonParseException("Target list entry must only consist of strings: " + targetCandidate);
+            throw new JsonParseException("Elements in target array must all be strings");
           }
-        }
-      } else if (targetElem.isJsonPrimitive() && ((JsonPrimitive) targetElem).isString()) {
-        targetCandidates.add(targetElem.getAsString());
+        });
+        target = BlockTargets.create(targetsList.toArray());
       } else {
-        throw new JsonParseException("Target must be either a string array or single string: " + targetElem);
-      }
-
-      for (String targetCandidate : targetCandidates) {
-        if (!targetCandidate.isEmpty() && targetCandidate.charAt(0) == '#') {
-          ResourceLocation tagName = ResourceLocation.tryParse(targetCandidate.substring(1));
-          if (tagName == null) {
-            throw new JsonParseException("Target tag is improperly formatted: " + targetCandidate.substring(1));
-          }
-          ITag<Block> tag = BlockTags.getAllTags().getTag(tagName);
-          if (tag != null) {
-            if (!tag.getValues().isEmpty()) {
-              target = tag.getValues().get(0);
-              break;
-            }
-          }
-        } else {
-          ResourceLocation blockName = ResourceLocation.tryParse(targetCandidate);
-          if (blockName == null) {
-            throw new JsonParseException("Target block name is improperly formatted: " + targetCandidate);
-          }
-          Block resolvedTarget = ForgeRegistries.BLOCKS.getValue(blockName);
-          if (resolvedTarget != null && !resolvedTarget.is(Blocks.AIR)) {
-            target = resolvedTarget;
-            break;
-          }
-        }
+        throw new JsonParseException("Target definition must be either a string array or a single string");
       }
     } else {
-      throw new JsonParseException("Invalid ore component definition: must define a target");
-    }
-    if (target == null) {
-      throw new JsonParseException("No target could be resolved");
+      throw new JsonParseException("Must define either a target string array or a single target string");
     }
 
     // REQUIRED
@@ -116,22 +85,22 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
     }
 
     // OPTIONAL
-    if (obj.has("destroySpeed")) {
-      JsonElement destroySpeedElem = obj.get("destroySpeed");
+    if (obj.has("hardness")) {
+      JsonElement destroySpeedElem = obj.get("hardness");
       if (destroySpeedElem.isJsonPrimitive() && ((JsonPrimitive) destroySpeedElem).isNumber()) {
-        destroySpeed = destroySpeedElem.getAsFloat();
+        hardness = destroySpeedElem.getAsFloat();
       } else {
-        throw new JsonParseException("Destroy speed must be a number: " + destroySpeedElem);
+        throw new JsonParseException("Hardness must be a number: " + destroySpeedElem);
       }
     }
 
     // OPTIONAL
-    if (obj.has("blastResistance")) {
-      JsonElement blastResistanceElem = obj.get("blastResistance");
+    if (obj.has("resistance")) {
+      JsonElement blastResistanceElem = obj.get("resistance");
       if (blastResistanceElem.isJsonPrimitive() && ((JsonPrimitive) blastResistanceElem).isNumber()) {
-        blastResistance = blastResistanceElem.getAsFloat();
+        resistance = blastResistanceElem.getAsFloat();
       } else {
-        throw new JsonParseException("Blast resistance must be a number: " + blastResistanceElem);
+        throw new JsonParseException("Resistance must be a number: " + blastResistanceElem);
       }
     }
 
@@ -146,11 +115,11 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
     }
 
     return OreComponent.builder()
-      .block(target)
-      .spawnWeight(weight)
+      .target(target)
+      .weight(weight)
       .color(color)
-      .destroySpeed(destroySpeed)
-      .resistance(blastResistance)
+      .hardness(hardness)
+      .resistance(resistance)
       .harvestLevel(harvestLevel)
       .build();
   }
@@ -158,13 +127,15 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
   @Override
   public JsonElement serialize(OreComponent oreComp, Type typeOfSrc, JsonSerializationContext context) {
     JsonObject obj = new JsonObject();
-    obj.addProperty("target", oreComp.getBlock().getRegistryName().toString());
-    obj.addProperty("weight", oreComp.getSpawnWeight());
-    if (oreComp.getDestroySpeed() != 3.0F) {
-      obj.addProperty("destroySpeed", oreComp.getDestroySpeed());
+    JsonArray targets = new JsonArray();
+    oreComp.getTarget().serialize().forEach(targets::add);
+    obj.add("target", targets);
+    obj.addProperty("weight", oreComp.getWeight());
+    if (oreComp.getHardness() != 3.0F) {
+      obj.addProperty("hardness", oreComp.getHardness());
     }
-    if (oreComp.getBlastResistance() != 3.0F) {
-      obj.addProperty("blastResistance", oreComp.getBlastResistance());
+    if (oreComp.getResistance() != 3.0F) {
+      obj.addProperty("resistance", oreComp.getResistance());
     }
     if (oreComp.getHarvestLevel() != 0) {
       obj.addProperty("harvestLevel", oreComp.getHarvestLevel());
