@@ -41,7 +41,9 @@ public class OreComponents {
       FLUORITE,
       YELLORIUM,
       // RFToolsBase
-      DIMENSIONAL_SHARD,
+      DIMENSIONAL_SHARD_OVERWORLD,
+      DIMENSIONAL_SHARD_NETHER,
+      DIMENSIONAL_SHARD_END,
       // Powah
       URANINITE_POOR,
       URANINITE,
@@ -81,10 +83,12 @@ public class OreComponents {
     SULFUR = registerFirstInOreTag("sulfur", OreComponent.builder().spawnWeight(7).harvestLevel(2));
     FLUORITE = registerFirstInOreTag("fluorite", OreComponent.builder().spawnWeight(3).harvestLevel(2));
     YELLORIUM = registerFirstInOreTag("yellorium", OreComponent.builder().spawnWeight(2).harvestLevel(2));
-    DIMENSIONAL_SHARD = registerFromBlockName("dimensional_shard", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().spawnWeight(3).harvestLevel(1));
-    URANINITE_POOR = registerFromBlockName("uraninite_poor", "powah:uraninite_ore_dense", OreComponent.builder().spawnWeight(5).harvestLevel(2));
-    URANINITE = registerFromBlockName("uraninite", "powah:uraninite_ore", OreComponent.builder().spawnWeight(3).harvestLevel(2));
-    URANINITE_DENSE = registerFromBlockName("uraninite_dense", "powah:uraninite_ore_dense", OreComponent.builder().spawnWeight(1).harvestLevel(2));
+    DIMENSIONAL_SHARD_OVERWORLD = registerFromBlockName("dimensionalshard_overworld", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().spawnWeight(3).harvestLevel(1));
+    DIMENSIONAL_SHARD_NETHER = registerFromBlockName("dimensionalshard_nether", "rftoolsbase:dimensionalshard_nether", OreComponent.builder().spawnWeight(2).harvestLevel(1));
+    DIMENSIONAL_SHARD_END = registerFromBlockName("dimensionalshard_end", "rftoolsbase:dimensionalshard_end", OreComponent.builder().spawnWeight(2).harvestLevel(1));
+    URANINITE_POOR = registerFromBlockName("uraninite_poor", "powah:uraninite_ore_poor", OreComponent.builder().spawnWeight(5).resistance(8.0F));
+    URANINITE = registerFromBlockName("uraninite", "powah:uraninite_ore", OreComponent.builder().spawnWeight(3).destroySpeed(3.2F).resistance(8.0F));
+    URANINITE_DENSE = registerFromBlockName("uraninite_dense", "powah:uraninite_ore_dense", OreComponent.builder().spawnWeight(1).destroySpeed(4.0F).resistance(8.0F));
 
     initialized = true;
   }

@@ -135,7 +135,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         if (count > 0) {
           LOGGER.info("{} new components registered from components directory: {}", count, dir);
         } else {
-          LOGGER.warn("No components were found in the components directory: {}. Will load hardcoded values instead", dir);
+          LOGGER.debug("No components were found in the components directory: {}", dir);
         }
       } catch (IOException e) {
         LOGGER.error("Could not read from components directory: " + dir + ". Will load backup hardcoded components instead", e);

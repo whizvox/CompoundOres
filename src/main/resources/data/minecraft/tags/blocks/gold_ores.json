@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "compoundores:compound_ore_gold",
+    "compoundores:compound_ore_nether_gold"
+  ]
+}
