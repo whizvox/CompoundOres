@@ -41,5 +41,11 @@
   "oreComponent.compoundores.platinum": "Platinum",
   "oreComponent.compoundores.sulfur": "Sulfur",
   "oreComponent.compoundores.fluorite": "Fluorite",
-  "oreComponent.compoundores.dimensional_shard": "Dimensional Shard"
+  "oreComponent.compoundores.yellorite": "Yellorite",
+  "oreComponent.compoundores.dimensionalshard_overworld": "Dimensional Shard",
+  "oreComponent.compoundores.dimensionalshard_nether": "Dimensional Shard",
+  "oreComponent.compoundores.dimensionalshard_end": "Dimensional Shard",
+  "oreComponent.compoundores.uraninite_poor": "Poor Uraninite",
+  "oreComponent.compoundores.uraninite": "Uraninite",
+  "oreComponent.compoundores.uraninite_dense": "Dense Uraninite"
 }
