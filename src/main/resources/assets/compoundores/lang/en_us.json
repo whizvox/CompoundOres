@@ -1,5 +1,5 @@
 {
-  "item.compoundores.compound_ore": "Compound Ore",
+  "item.compoundores.compound_ore.base": "%s Compound Ore Base",
   "item.compoundores.compound_ore.full": "%1$s-%2$s Compound Ore",
   "itemGroup.compoundores.ores": "Compound Ores",
   "tooltip.compoundores.compoundOreItem.componentsListHeader": "Components:",
@@ -41,7 +41,7 @@
   "oreComponent.compoundores.platinum": "Platinum",
   "oreComponent.compoundores.sulfur": "Sulfur",
   "oreComponent.compoundores.fluorite": "Fluorite",
-  "oreComponent.compoundores.yellorite": "Yellorite",
+  "oreComponent.compoundores.yellorium": "Yellorium",
   "oreComponent.compoundores.dimensionalshard_overworld": "Dimensional Shard",
   "oreComponent.compoundores.dimensionalshard_nether": "Dimensional Shard",
   "oreComponent.compoundores.dimensionalshard_end": "Dimensional Shard",

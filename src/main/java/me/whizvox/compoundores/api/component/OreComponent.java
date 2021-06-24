@@ -2,26 +2,34 @@ package me.whizvox.compoundores.api.component;
 
 import me.whizvox.compoundores.api.target.BlockTargets;
 import me.whizvox.compoundores.api.target.IBlockTarget;
+import net.minecraft.block.material.MaterialColor;
+import net.minecraftforge.common.ToolType;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Objects;
 
 public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Comparable<OreComponent> {
 
-  public static final OreComponent EMPTY = new OreComponent(IBlockTarget.NONE, 0xFFFFFF, 0.0F, 0.0F, 0, 0);
+  public static final OreComponent EMPTY = builder().build();
 
-  private IBlockTarget target;
-  private int color;
-  private float hardness;
-  private float resistance;
-  private int harvestLevel;
-  private int weight;
+  private final IBlockTarget target;
+  private final int overlayColor;
+  private final MaterialColor materialColor;
+  private final ToolType harvestTool;
+  // TODO final Add a SoundType property
+  private final float hardness;
+  private final float resistance;
+  private final int harvestLevel;
+  private final int weight;
 
-  private OreComponent(IBlockTarget target, int color, float hardness, float resistance, int harvestLevel, int weight) {
+  public OreComponent(IBlockTarget target, int overlayColor, MaterialColor materialColor, ToolType harvestTool, float hardness, float resistance, int harvestLevel, int weight) {
     this.target = target;
-    this.color = color;
+    this.overlayColor = overlayColor;
+    this.materialColor = materialColor;
+    this.harvestTool = harvestTool;
     this.hardness = hardness;
     this.resistance = resistance;
     this.harvestLevel = harvestLevel;
@@ -36,8 +44,17 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     return target;
   }
 
-  public int getColor() {
-    return color;
+  public int getOverlayColor() {
+    return overlayColor;
+  }
+
+  public MaterialColor getMaterialColor() {
+    return materialColor;
+  }
+
+  @Nullable
+  public ToolType getHarvestTool() {
+    return harvestTool;
   }
 
   public float getHardness() {
@@ -65,7 +82,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null || obj.getClass().isAssignableFrom(OreComponent.class)) {
+    if (obj == null || !obj.getClass().isAssignableFrom(OreComponent.class)) {
       return false;
     }
     return Objects.equals(getRegistryName(), ((OreComponent) obj).getRegistryName());
@@ -87,18 +104,22 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
 
   public static class Builder {
     private IBlockTarget target;
-    private int color;
+    private int overlayColor;
+    private MaterialColor materialColor;
+    private ToolType harvestTool;
     private float destroySpeed;
     private float blastResistance;
     private int harvestLevel;
-    private int spawnWeight;
+    private int weight;
     public Builder() {
       target = IBlockTarget.NONE;
-      color = 0xFFFFFF; // white
-      destroySpeed = 3.0F;
-      blastResistance = 3.0F;
-      harvestLevel = 0;
-      spawnWeight = 1;
+      overlayColor = DefaultValues.OVERLAY_COLOR;
+      materialColor = DefaultValues.MATERIAL_COLOR;
+      harvestTool = DefaultValues.HARVEST_TOOL;
+      destroySpeed = DefaultValues.HARDNESS;
+      blastResistance = DefaultValues.RESISTANCE;
+      harvestLevel = DefaultValues.HARVEST_LEVEL;
+      weight = DefaultValues.WEIGHT;
     }
     public Builder target(IBlockTarget target) {
       this.target = target;
@@ -107,29 +128,47 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     public Builder target(Object... targets) {
       return target(BlockTargets.create(targets));
     }
-    public Builder color(int color) {
-      this.color = color;
+    public Builder overlayColor(int overlayColor) {
+      this.overlayColor = overlayColor;
       return this;
     }
-    public Builder hardness(float destroySpeed) {
-      this.destroySpeed = destroySpeed;
+    public Builder materialColor(MaterialColor materialColor) {
+      this.materialColor = materialColor;
       return this;
     }
-    public Builder resistance(float blastResistance) {
-      this.blastResistance = blastResistance;
+    public Builder tool(ToolType harvestTool) {
+      this.harvestTool = harvestTool;
+      return this;
+    }
+    public Builder hardness(float hardness) {
+      this.destroySpeed = hardness;
+      return this;
+    }
+    public Builder resistance(float resistance) {
+      this.blastResistance = resistance;
       return this;
     }
     public Builder harvestLevel(int harvestLevel) {
       this.harvestLevel = harvestLevel;
       return this;
     }
-    public Builder weight(int spawnWeight) {
-      this.spawnWeight = spawnWeight;
+    public Builder weight(int weight) {
+      this.weight = weight;
       return this;
     }
     public OreComponent build() {
-      return new OreComponent(target, color, destroySpeed, blastResistance, harvestLevel, spawnWeight);
+      return new OreComponent(target, overlayColor, materialColor, harvestTool, destroySpeed, blastResistance, harvestLevel, weight);
     }
+  }
+
+  public static final class DefaultValues {
+    public static final int OVERLAY_COLOR = 0xFFFFFF;
+    public static final MaterialColor MATERIAL_COLOR = MaterialColor.STONE;
+    public static final ToolType HARVEST_TOOL = ToolType.PICKAXE;
+    public static final float HARDNESS = 3.0F;
+    public static final float RESISTANCE = 3.0F;
+    public static final int HARVEST_LEVEL = 0;
+    public static final int WEIGHT = 1;
   }
 
 }

@@ -17,22 +17,22 @@ public class RenderHelper {
   private static final Vector3f
     XDIR_NORTH = new Vector3f(1, 0, 0),
     YDIR_NORTH = new Vector3f(0, -1, 0),
-    CENTER_NORTH = new Vector3f(0.5F, 0.5F, -0.0001F),
+    CENTER_NORTH = new Vector3f(0.5F, 0.5F, -0.001F),
     XDIR_SOUTH = new Vector3f(-1, 0, 0),
     YDIR_SOUTH = new Vector3f(0, -1, 0),
-    CENTER_SOUTH = new Vector3f(0.5F, 0.5F, 1.0001F),
+    CENTER_SOUTH = new Vector3f(0.5F, 0.5F, 1.001F),
     XDIR_EAST = new Vector3f(0, 0, 1),
     YDIR_EAST = new Vector3f(0, -1, 0),
-    CENTER_EAST = new Vector3f(1.0001F, 0.5F, 0.5F),
+    CENTER_EAST = new Vector3f(1.001F, 0.5F, 0.5F),
     XDIR_WEST = new Vector3f(0, 0, -1),
     YDIR_WEST = new Vector3f(0, -1, 0),
-    CENTER_WEST = new Vector3f(-0.0001F, 0.5F, 0.5F),
+    CENTER_WEST = new Vector3f(-0.001F, 0.5F, 0.5F),
     XDIR_UP = new Vector3f(-1, 0, 0),
     YDIR_UP = new Vector3f(0, 0, 1),
-    CENTER_UP = new Vector3f(0.5F, 1.0001F, 0.5F),
+    CENTER_UP = new Vector3f(0.5F, 1.001F, 0.5F),
     XDIR_DOWN = new Vector3f(-1, 0, 0),
     YDIR_DOWN = new Vector3f(0, 0, -1),
-    CENTER_DOWN = new Vector3f(0.5F, -0.0001F, 0.5F);
+    CENTER_DOWN = new Vector3f(0.5F, -0.001F, 0.5F);
 
   public static void drawCubeQuads(ResourceLocation texture, MatrixStack matrixStack, IRenderTypeBuffer renderBuffer,
                                     int color, int combinedLight) {

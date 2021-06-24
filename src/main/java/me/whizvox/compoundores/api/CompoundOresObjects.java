@@ -22,9 +22,7 @@ import net.minecraft.util.registry.WorldGenRegistries;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
-import net.minecraftforge.common.ToolType;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -75,16 +73,19 @@ public class CompoundOresObjects {
     return register(ForgeRegistries.ITEMS, name, item);
   }
 
-  @SubscribeEvent(priority = EventPriority.LOWEST) // make sure other mods have already registered their ores
+  @SubscribeEvent
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     Map<ResourceLocation, CompoundOreBlock> tempCompOres = new HashMap<>();
     OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
       if (!oreComp.isEmpty()) {
-        CompoundOreBlock block = new CompoundOreBlock(AbstractBlock.Properties.of(Material.STONE, oreComp.getTarget().getResolvedTargets().stream().findFirst().get().defaultMaterialColor())
-          .requiresCorrectToolForDrops()
-          .harvestTool(ToolType.PICKAXE)
+        AbstractBlock.Properties props = AbstractBlock.Properties.of(Material.STONE, oreComp.getMaterialColor())
           .strength(oreComp.getHardness(), oreComp.getResistance())
-          .harvestLevel(oreComp.getHarvestLevel()), oreComp);
+          .harvestLevel(oreComp.getHarvestLevel());
+        if (oreComp.getHarvestTool() != null) {
+          props.requiresCorrectToolForDrops()
+            .harvestTool(oreComp.getHarvestTool());
+        }
+        CompoundOreBlock block = new CompoundOreBlock(props, oreComp);
         registerBlock("compound_ore_" + oreComp.getRegistryName().getPath(), block);
         LOGGER.debug(REGISTRY, "Registered compound ore block {} for component {}", block.getRegistryName(), oreComp.getRegistryName());
         tempCompOres.put(oreComp.getRegistryName(), block);
@@ -96,16 +97,16 @@ public class CompoundOresObjects {
 
   @SubscribeEvent
   public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
-    Map<ResourceLocation, CompoundOreBlockItem> tempComp = new HashMap<>();
+    Map<ResourceLocation, CompoundOreBlockItem> tempBlockItems = new HashMap<>();
     // register items alphabetically so it looks neat in the creative menu and JEI
-    OreComponentRegistry.getInstance().getSortedValues().forEach(oreComp -> {
+    OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
       final ResourceLocation key = oreComp.getRegistryName();
       CompoundOreBlockItem item = new CompoundOreBlockItem(blocks.get(key), new Item.Properties().tab(CompoundOres.ITEM_GROUP_ORES));
       registerItem("compound_ore_" + oreComp.getRegistryName().getPath(), item);
       LOGGER.debug(REGISTRY, "Registered compound ore block item {} for component {}", item.getRegistryName(), key);
-      tempComp.put(key, item);
+      tempBlockItems.put(key, item);
     });
-    blockItems = Collections.unmodifiableMap(tempComp);
+    blockItems = Collections.unmodifiableMap(tempBlockItems);
     LOGGER.debug(REGISTRY, "Registered {} total compound ore block items", blockItems.size());
 
     if (oresItemGroupIcon.isEmpty() && !blockItems.isEmpty() && OreComponentRegistry.getInstance().getValues().size() > 1) {

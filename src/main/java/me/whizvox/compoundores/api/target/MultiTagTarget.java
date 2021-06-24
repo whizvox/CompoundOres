@@ -1,5 +1,6 @@
 package me.whizvox.compoundores.api.target;
 
+import me.whizvox.compoundores.obj.CompoundOreBlock;
 import net.minecraft.block.Block;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
@@ -26,7 +27,7 @@ class MultiTagTarget implements IBlockTarget {
   @Override
   public Set<Block> getResolvedTargets() {
     Set<Block> resolved = new HashSet<>();
-    tags.forEach(tag -> resolved.addAll(tag.getValues()));
+    tags.forEach(tag -> resolved.addAll(tag.getValues().stream().filter(block -> !(block instanceof CompoundOreBlock)).collect(Collectors.toSet())));
     return resolved;
   }
 

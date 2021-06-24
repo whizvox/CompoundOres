@@ -112,11 +112,7 @@ public class OreComponents {
     if (exists(name)) {
       return wrap(name);
     }
-    ITag<Block> tag = BlockTags.getAllTags().getTag(new ResourceLocation(tagName));
-    if (tag == null || tag.getValues().isEmpty()) {
-      return OreComponent.EMPTY;
-    }
-    return register(name, builder.target(tag).build());
+    return register(name, builder.target(BlockTags.createOptional(new ResourceLocation(tagName))).build());
   }
 
   public static OreComponent registerFirstInOreTag(String namespace, String tagOreName, OreComponent.Builder builder) {

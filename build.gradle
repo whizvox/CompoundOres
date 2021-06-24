@@ -12,7 +12,23 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = 'dev-20200622.1'
+repositories {
+  maven {
+    url 'https://modmaven.dev/'
+  }
+  maven {
+    // location of the maven that hosts JEI files
+    name = "Progwml6 maven"
+    url = "https://dvs1.progwml6.com/files/maven/"
+  }
+  maven {
+    // location of a maven mirror for JEI files, as a fallback
+    name = "ModMaven"
+    url = "https://modmaven.k-4u.nl"
+  }
+}
+
+version = 'dev-20200624'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 
@@ -66,6 +82,13 @@ sourceSets.main.resources {
 
 dependencies {
   minecraft 'net.minecraftforge:forge:1.16.5-36.1.25'
+
+  // if you want to test with other mods, put them as runtimeOnly dependencies here
+  // examples:
+  /*runtimeOnly fg.deobf('mezz.jei:jei-1.16.5:7.6.1.75')
+  runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448')
+  runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:generators')
+  runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:tools')*/
 }
 
 jar {

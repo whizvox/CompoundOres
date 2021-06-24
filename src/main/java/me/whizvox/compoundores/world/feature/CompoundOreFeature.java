@@ -1,11 +1,8 @@
 package me.whizvox.compoundores.world.feature;
 
-import me.whizvox.compoundores.api.CompoundOresObjects;
 import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
-import me.whizvox.compoundores.obj.CompoundOreTile;
-import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntity;
+import me.whizvox.compoundores.helper.WorldHelper;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ISeedReader;
@@ -28,7 +25,6 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
     OreComponentRegistry.getInstance().getComponentFromBlock(world.getBlockState(rootPos).getBlock(), rand);
     OreComponent oreComp = OreComponentRegistry.getInstance().getComponentFromBlock(world.getBlockState(rootPos).getBlock(), rand);
     if (oreComp != null && !oreComp.isEmpty()) {
-      BlockState compOreState = CompoundOresObjects.blocks.get(oreComp.getRegistryName()).defaultBlockState();
       // perform a breadth-first search to replace all found ores with compound ores
       Queue<BlockPos> queue = new ArrayDeque<>();
       Set<BlockPos> discovered = new HashSet<>();
@@ -36,11 +32,12 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
       queue.add(rootPos);
       while (!queue.isEmpty()) {
         BlockPos pos = queue.remove();
-        // veins may exist beyond the currently-loaded chunk, so for now, don't attempt to work in unloaded chunks
+        // (Issue #4) veins may extend to chunks that are not loaded yet. don't know how to deal with that, so for now,
+        // don't work in chunks that are not loaded
         IChunk chunk = world.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.EMPTY, false);
         if (chunk != null) {
           if (oreComp.getTarget().accepted(chunk.getBlockState(pos).getBlock())) {
-            place_do(world, rand, pos, compOreState);
+            WorldHelper.placeCompoundOreBlock(world, pos, oreComp, OreComponentRegistry.getInstance().getRandomComponent(oreComp, rand));
           }
           for (Direction direction : Direction.values()) {
             BlockPos nPos = pos.relative(direction);
@@ -54,14 +51,6 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
       return true;
     }
     return false;
-  }
-
-  private void place_do(ISeedReader world, Random rand, BlockPos pos, BlockState compOreState) {
-    world.setBlock(pos, compOreState, 2);
-    TileEntity tile = world.getBlockEntity(pos);
-    if (tile instanceof CompoundOreTile) {
-      ((CompoundOreTile) tile).setSecondaryComponent(OreComponentRegistry.getInstance().getWeighedRandomComponent(rand));
-    }
   }
 
 }

@@ -2,6 +2,7 @@ package me.whizvox.compoundores.api.component;
 
 import com.google.gson.JsonParseException;
 import me.whizvox.compoundores.CompoundOres;
+import me.whizvox.compoundores.api.util.ComponentLootTable;
 import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.util.JsonHelper;
 import me.whizvox.compoundores.util.PathHelper;
@@ -39,6 +40,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
   private TreeMap<Integer, OreComponent> weighedValues;
   private final AtomicInteger totalWeight;
   private Map<ResourceLocation, List<OreComponent>> blockComponentLookupMap;
+  private Map<ResourceLocation, ComponentLootTable> lootTables;
 
   private OreComponentRegistry(IForgeRegistry<OreComponent> registry) {
     super(registry);
@@ -56,7 +58,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       // Also update the weighted component map
       weighedValues = new TreeMap<>();
       blockComponentLookupMap = new HashMap<>();
-      super.getValues().forEach(oreComp -> {
+      getValues().forEach(oreComp -> {
         Set<Block> resolved = oreComp.getTarget().getResolvedTargets();
         if (!resolved.isEmpty()) {
           nonEmptyRegistry.put(oreComp.getRegistryName(), oreComp);
@@ -72,6 +74,10 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       nonEmptyRegistry = Collections.unmodifiableMap(nonEmptyRegistry);
       blockComponentLookupMap = Collections.unmodifiableMap(blockComponentLookupMap);
 
+      lootTables = new HashMap<>();
+      nonEmptyRegistry.forEach((key, oreComp) -> lootTables.put(key, ComponentLootTable.create(oreComp)));
+      lootTables = Collections.unmodifiableMap(lootTables);
+
       // Resolve sorted components list
       sortedComponents = new ArrayList<>(nonEmptyRegistry.values());
       sortedComponents.sort(Comparator.comparing(o -> o.getRegistryName()));
@@ -79,6 +85,27 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     }
   }
 
+  public Map<ResourceLocation, ComponentLootTable> getLootTables() {
+    resolveCaches();
+    return lootTables;
+  }
+
+  public ComponentLootTable getLootTable(OreComponent oreComp) {
+    return getLootTables().getOrDefault(oreComp.getRegistryName(), ComponentLootTable.EMPTY);
+  }
+
+  /**
+   * Will register an {@link OreComponent} with respect to the mod's configuration files. Both of the following
+   * conditions must evaluate to true for the component to be registered.
+   * <ol>
+   *   <li>Either the component's registry name is on the whitelist or not on the blacklist</li>
+   *   <li>The component's registry name does not match another registry entry</li>
+   * </ol>
+   * If either of the following conditions, however, evaluates to false, then the component is not registered, and
+   * {@link OreComponent#EMPTY} is returned instead.
+   * @param value The ore component to register
+   * @return The provided value if registration was successful, otherwise {@link OreComponent#EMPTY}
+   */
   public OreComponent registerChecked(OreComponent value) {
     if (whitelistExceptions) {
       if (!registryExceptions.contains(value.getRegistryName())) {
@@ -99,8 +126,26 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     return value;
   }
 
+  /**
+   * Get how many total registered entries there are.
+   * @return The number of registered entries. This will also include any components with empty resolved targets.
+   */
   public int getCount() {
-    return super.getValues().size();
+    return getValues().size();
+  }
+
+  /**
+   * <p>Get a trimmed-down version of this registry's values where each component's target resolves to at least a one
+   * block.</p>
+   * <p><strong>Do not call until after {@link RegistryEvent.Register}&lt;{@link Block}&gt; has finished being
+   * dispatched.</strong></p>
+   * @return An unmodifiable, filtered map of this registry's values. Each value's target (via
+   * {@link OreComponent#getTarget()}) must match at least one registered block. If this condition is not met, then the
+   * value is not included in the returned list.
+   */
+  public Map<ResourceLocation, OreComponent> getNonEmptyRegistry() {
+    resolveCaches();
+    return nonEmptyRegistry;
   }
 
   @Override
@@ -112,44 +157,78 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
   @Override
   @Nonnull
   public OreComponent getValue(ResourceLocation key) {
-    resolveCaches();
-    return nonEmptyRegistry.getOrDefault(key, OreComponent.EMPTY);
+    OreComponent comp = super.getValue(key);
+    if (comp == null) {
+      return OreComponent.EMPTY;
+    }
+    return comp;
   }
 
-  @Nonnull
-  @Override
-  public Collection<OreComponent> getValues() {
-    resolveCaches();
-    return nonEmptyRegistry.values();
-  }
-
+  /**
+   * Get a list of all non-empty components sorted in alphabetical order.
+   * <p><strong>Do not call until after {@link RegistryEvent.Register}&lt;{@link Block}&gt; has finished being
+   * dispatched.</strong></p>
+   * @return A list where each non-empty ore component is sorted in alphabetical order (by their registry name's path)
+   * @see #getNonEmptyRegistry()
+   */
   public List<OreComponent> getSortedValues() {
     resolveCaches();
     return sortedComponents;
   }
 
-  public int getTotalWeight() {
-    resolveCaches();
-    return totalWeight.get();
-  }
-
-  public OreComponent getWeighedRandomComponent(Random rand) {
-    resolveCaches();
-    return weighedValues.get(weighedValues.floorKey(rand.nextInt(getTotalWeight())));
-  }
-
+  /**
+   * Get a random, non-empty component from this registry.
+   * <p><strong>Do not call until after {@link RegistryEvent.Register}&lt;{@link Block}&gt; has finished being
+   * dispatched.</strong></p>
+   * @param rand The random object to use when picking the value
+   * @return A random registered ore component that is guaranteed to be non-empty
+   * @see #getNonEmptyRegistry()
+   * @see #getRandomComponent(OreComponent, Random)
+   */
   public OreComponent getRandomComponent(Random rand) {
     resolveCaches();
-    // sortedComponents is already a List, while nonEmptyRegistry.getValues() is Collection
     return sortedComponents.get(rand.nextInt(sortedComponents.size()));
   }
 
+  /**
+   * Get a random, weighted, non-empty component that is specific to a specified {@link OreComponent}. This will
+   * respect the mod's configuration files in its determination, meaning that if a certain secondary component is
+   * either blacklisted entirely or blacklisted only in combination with the specified component, then that component
+   * will never show up.
+   * <p><strong>Do not call until after {@link RegistryEvent.Register}&lt;{@link Block}&gt; has finished being
+   * dispatched.</strong></p>
+   * @param primary The primary ore component
+   * @param rand The random object to use when picking the component
+   * @return An ore component that is configured to generate with the specified primary component
+   * @see #getNonEmptyRegistry()
+   * @see #getRandomComponent(Random)
+   */
+  public OreComponent getRandomComponent(OreComponent primary, Random rand) {
+    resolveCaches();
+    return lootTables.getOrDefault(primary.getRegistryName(), ComponentLootTable.EMPTY).next(rand);
+  }
+
+  /**
+   * Get a random component from a targeted block.
+   * <p><strong>Do not call until after {@link RegistryEvent.Register}&lt;{@link Block}&gt; has finished being
+   * dispatched.</strong></p>
+   * @param block The target block
+   * @param rand The random component to use when picking a resulting ore component
+   * @return Some ore component that matches the target block. If multiple components target the same block, then a
+   * random one will be returned. If no ore component targets this block, then {@link OreComponent#EMPTY} is returned
+   * instead.
+   * @see #getNonEmptyRegistry()
+   */
   public OreComponent getComponentFromBlock(Block block, Random rand) {
     resolveCaches();
     List<OreComponent> oreComponents = blockComponentLookupMap.getOrDefault(block.getRegistryName(), Collections.emptyList());
     if (oreComponents.isEmpty()) {
       return OreComponent.EMPTY;
     }
+    if (oreComponents.size() == 1) {
+      return oreComponents.get(0);
+    }
+    // it's possible for multiple components to target the same block, so get a random one
     return oreComponents.get(rand.nextInt(oreComponents.size()));
   }
 

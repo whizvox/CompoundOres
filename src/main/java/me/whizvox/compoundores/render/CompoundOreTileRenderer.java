@@ -35,17 +35,17 @@ public class CompoundOreTileRenderer extends TileEntityRenderer<CompoundOreTile>
         if (!tile.getLevel().getBlockState(pos).isSolidRender(tile.getLevel(), pos)) {
           int brightness = tile.getLevel().getMaxLocalRawBrightness(pos);
           // renderer expecting RGBA, so shift left and add FF byte to end
-          RenderHelper.addFace(dir, stack.last().pose(), stack.last().normal(), vb, (secondary.getColor() << 8) | 0xFF, 1.0F, 1.0F, new Vector2f(0.0F, 1.0F), 1.0F, 1.0F, LightTexture.pack(brightness, brightness));
+          RenderHelper.addFace(dir, stack.last().pose(), stack.last().normal(), vb, (secondary.getOverlayColor() << 8) | 0xFF, 1.0F, 1.0F, new Vector2f(0.0F, 1.0F), 1.0F, 1.0F, LightTexture.pack(brightness, brightness));
         }
       }
       stack.popPose();
     }
   }
 
-  private static Map<ResourceLocation, ResourceLocation> textureMap = new HashMap<>();
+  private static Map<ResourceLocation, ResourceLocation> textureMapCache = new HashMap<>();
 
   private static ResourceLocation getTexture(OreComponent oreComp) {
-    return textureMap.computeIfAbsent(
+    return textureMapCache.computeIfAbsent(
       oreComp.getRegistryName(),
       name -> new ResourceLocation(oreComp.getRegistryName().getNamespace(), "textures/component_overlays/" + oreComp.getRegistryName().getPath() + ".png")
     );

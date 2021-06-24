@@ -70,9 +70,9 @@ public class CompoundOreBlock extends OreBlock {
       }
     }
     if (tile instanceof CompoundOreTile) {
-      CompoundOreTile compOre = (CompoundOreTile) tile;
-      if (compOre.getSecondaryComponent() != null && !compOre.getSecondaryComponent().isEmpty()) {
-        drops.addAll(compOre.getSecondaryComponent().getTarget().getResolvedTarget().getDrops(state, builder));
+      OreComponent secondary = ((CompoundOreTile) tile).getSecondaryComponent();
+      if (secondary != null && !secondary.isEmpty() && !secondary.getTarget().getResolvedTargets().isEmpty()) {
+        drops.addAll(secondary.getTarget().getResolvedTarget().getDrops(state, builder));
       }
     }
     return drops;
@@ -95,7 +95,7 @@ public class CompoundOreBlock extends OreBlock {
     int baseXpDrop = primaryComponent.getTarget().getResolvedTarget().getExpDrop(state, world, pos, fortune, silktouch);
     if (tile instanceof CompoundOreTile) {
       OreComponent secondary = ((CompoundOreTile) tile).getSecondaryComponent();
-      if (secondary != null && !secondary.isEmpty()) {
+      if (secondary != null && !secondary.isEmpty() && !secondary.getTarget().getResolvedTargets().isEmpty()) {
         return baseXpDrop + secondary.getTarget().getResolvedTarget().getExpDrop(state, world, pos, fortune, silktouch);
       }
     }
