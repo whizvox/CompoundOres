@@ -38,13 +38,16 @@ public class ComponentLootTable {
   }
 
   public static ComponentLootTable create(OreComponent oreComp) {
-    // TODO Allow whitelisting/blacklisting of certain combinations
     TreeMap<Integer, OreComponent> map = new TreeMap<>();
     AtomicInteger totalWeight = new AtomicInteger(0);
     List<ResourceLocation> exceptions = CompoundOresConfig.COMMON.secondaryComponentsExceptions();
     boolean whitelist = CompoundOresConfig.COMMON.secondaryComponentsWhitelist();
     OreComponentRegistry.getInstance().getNonEmptyRegistry().values().stream()
-      .filter(c -> !oreComp.equals(c) && ((whitelist && exceptions.contains(c.getRegistryName())) || (!whitelist && !exceptions.contains(c.getRegistryName()))) && !c.getTarget().getResolvedTargets().isEmpty())
+      .filter(c ->
+        !oreComp.equals(c) &&
+          ((whitelist && exceptions.contains(c.getRegistryName())) || (!whitelist && !exceptions.contains(c.getRegistryName()))) &&
+          !c.getTarget().getResolvedTargets().isEmpty() &&
+          !OreComponentRegistry.getInstance().getGroup(oreComp).contains(c))
       .forEach(c -> map.put(totalWeight.getAndAdd(c.getWeight()), c));
     return new ComponentLootTable(map, totalWeight.get());
   }

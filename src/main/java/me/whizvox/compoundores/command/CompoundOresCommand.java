@@ -2,14 +2,16 @@ package me.whizvox.compoundores.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.whizvox.compoundores.api.CompoundOresObjects;
 import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
+import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.helper.NBTHelper;
 import me.whizvox.compoundores.helper.WorldHelper;
 import me.whizvox.compoundores.network.CompoundOresNetwork;
-import me.whizvox.compoundores.network.GenerateComponentsPacket;
+import me.whizvox.compoundores.network.GeneratePacket;
 import me.whizvox.compoundores.obj.CompoundOreBlock;
 import me.whizvox.compoundores.obj.CompoundOreBlockItem;
 import me.whizvox.compoundores.util.COBlockSnapshot;
@@ -39,7 +41,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CompoundOresDebugCommand {
+import static me.whizvox.compoundores.CompoundOres.LOGGER;
+import static me.whizvox.compoundores.helper.Markers.SERVER;
+
+public class CompoundOresCommand {
 
   private static final ITextComponent
     MSG_ITEMTAGS_NO_ITEM = new TranslationTextComponent("message.compoundores.debugCommand.itemtags.noItem"),
@@ -52,45 +57,52 @@ public class CompoundOresDebugCommand {
   }
 
   public static void register(CommandDispatcher<CommandSource> dispatcher) {
-    dispatcher.register(
-      Commands.literal("compores")
+    LiteralArgumentBuilder<CommandSource> builder = Commands.literal("compores")
+      .then(Commands.literal("generate")
+        .requires(src -> shouldExecute(src, 2))
+        .executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.BOTH))
+        .then(Commands.literal("both").executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.BOTH)))
+        .then(Commands.literal("components").executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.COMPONENTS)))
+        .then(Commands.literal("groups").executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.GROUPS)))
+      )
+      .then(Commands.literal("give")
+        .requires(src -> shouldExecute(src, 2))
+        .then(Commands.argument("primary", OreComponentArgumentType.oreComponent())
+          .then(Commands.argument("secondary", OreComponentArgumentType.oreComponent())
+            .executes(ctx -> giveCompoundOre(ctx, 1))
+            .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
+              .executes(ctx -> giveCompoundOre(ctx, ctx.getArgument("count", Integer.class)))
+            )
+          )
+        )
+      );
+    if (CompoundOresConfig.COMMON.registerDebugCommand()) {
+      LOGGER.info(SERVER, "Registering CompoundOres debug subcommands");
+      builder
         .then(Commands.literal("itemtags")
-          .requires(src -> shouldExecute(src, 2))
-          .executes(CompoundOresDebugCommand::itemTags)
+        .requires(src -> shouldExecute(src, 2))
+        .executes(CompoundOresCommand::itemTags)
         )
         .then(Commands.literal("blocktags")
           .requires(src -> shouldExecute(src, 2))
-          .executes(CompoundOresDebugCommand::blockTags)
+          .executes(CompoundOresCommand::blockTags)
         )
         .then(Commands.literal("cleararea")
           .requires(src -> shouldExecute(src, 4))
           .executes(ctx -> clearArea(ctx, true))
           .then(Commands.literal("allores").executes(ctx -> clearArea(ctx, false)))
-          .then(Commands.literal("restore").executes(CompoundOresDebugCommand::undoClearedArea))
-        )
-        .then(Commands.literal("generate")
-          .requires(src -> shouldExecute(src, 2))
-          .executes(CompoundOresDebugCommand::generateCompounds)
-        )
-        .then(Commands.literal("give")
-          .requires(src -> shouldExecute(src, 2))
-          .then(Commands.argument("primary", OreComponentArgumentType.oreComponent())
-            .then(Commands.argument("secondary", OreComponentArgumentType.oreComponent())
-              .executes(ctx -> giveCompoundOre(ctx, 1))
-              .then(Commands.argument("count", IntegerArgumentType.integer(1, 64))
-                .executes(ctx -> giveCompoundOre(ctx, ctx.getArgument("count", Integer.class)))
-              )
-            )
-          )
+          .then(Commands.literal("restore").executes(CompoundOresCommand::undoClearedArea))
         )
         .then(Commands.literal("collage")
           .requires(src -> shouldExecute(src, 2))
           .executes(ctx -> createCollage(ctx, false))
           .then(Commands.literal("all")
             .executes(ctx -> createCollage(ctx, true))
-          )
         )
-    );
+      );
+    }
+    LOGGER.debug(SERVER, "Registering CompoundOres /compores command");
+    dispatcher.register(builder);
   }
 
   private static int itemTags(CommandContext<CommandSource> ctx) {
@@ -174,8 +186,8 @@ public class CompoundOresDebugCommand {
     return 1;
   }
 
-  private static int generateCompounds(CommandContext<CommandSource> ctx) {
-    CompoundOresNetwork.sendToPlayer(new GenerateComponentsPacket(), (ServerPlayerEntity) ctx.getSource().getEntity());
+  private static int generateCompounds(CommandContext<CommandSource> ctx, GeneratePacket.Which which) {
+    CompoundOresNetwork.sendToPlayer(new GeneratePacket(which), (ServerPlayerEntity) ctx.getSource().getEntity());
     return 1;
   }
 

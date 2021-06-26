@@ -1,11 +1,11 @@
 package me.whizvox.compoundores.api.component;
 
 import me.whizvox.compoundores.CompoundOres;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.Arrays;
 
 public class OreComponents {
 
@@ -89,7 +89,15 @@ public class OreComponents {
     URANINITE = registerFromBlockName("uraninite", "powah:uraninite_ore", OreComponent.builder().weight(3).hardness(3.2F).resistance(8.0F));
     URANINITE_DENSE = registerFromBlockName("uraninite_dense", "powah:uraninite_ore_dense", OreComponent.builder().weight(1).hardness(4.0F).resistance(8.0F));
 
+    addGroup("gold", GOLD, NETHER_GOLD);
+    addGroup("dimensionalshard", DIMENSIONAL_SHARD_OVERWORLD, DIMENSIONAL_SHARD_NETHER, DIMENSIONAL_SHARD_END);
+    addGroup("uraninite", URANINITE_POOR, URANINITE, URANINITE_DENSE);
+
     initialized = true;
+  }
+
+  private static void addGroup(String name, OreComponent... components) {
+    OreComponentRegistry.getInstance().addGroup(name, Arrays.asList(components));
   }
 
   // the values in this file are technically the "fallback" components, so the components in this file will only

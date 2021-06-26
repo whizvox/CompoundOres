@@ -4,7 +4,6 @@ import me.whizvox.compoundores.api.CompoundOresObjects;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.command.CompoundOresCommands;
 import me.whizvox.compoundores.config.CompoundOresConfig;
-import me.whizvox.compoundores.helper.Markers;
 import me.whizvox.compoundores.network.CompoundOresNetwork;
 import me.whizvox.compoundores.render.CompoundOreTileRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -72,12 +71,7 @@ public class CompoundOres {
 
   @SubscribeEvent
   public void onRegisterCommands(final RegisterCommandsEvent event) {
-    if (CompoundOresConfig.COMMON.registerDebugCommand()) {
-      LOGGER.info(Markers.SERVER, "Configured TO register /compores debug command");
-      CompoundOresCommands.register(event.getDispatcher());
-    } else {
-      LOGGER.debug(Markers.SERVER, "Configured to not register /compores debug command");
-    }
+    CompoundOresCommands.register(event.getDispatcher());
   }
 
   @SubscribeEvent

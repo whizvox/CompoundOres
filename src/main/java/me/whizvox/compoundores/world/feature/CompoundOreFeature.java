@@ -2,6 +2,7 @@ package me.whizvox.compoundores.world.feature;
 
 import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
+import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.helper.WorldHelper;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -30,7 +31,9 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
       Set<BlockPos> discovered = new HashSet<>();
       discovered.add(rootPos);
       queue.add(rootPos);
-      while (!queue.isEmpty()) {
+      int replaceCount = 0;
+      final int maxReplaceCount = CompoundOresConfig.COMMON.maxReplaceCount();
+      while (!queue.isEmpty() && replaceCount < maxReplaceCount) {
         BlockPos pos = queue.remove();
         // (Issue #4) veins may extend to chunks that are not loaded yet. don't know how to deal with that, so for now,
         // don't work in chunks that are not loaded
@@ -38,6 +41,7 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
         if (chunk != null) {
           if (oreComp.getTarget().accepted(chunk.getBlockState(pos).getBlock())) {
             WorldHelper.placeCompoundOreBlock(world, pos, oreComp, OreComponentRegistry.getInstance().getRandomComponent(oreComp, rand));
+            replaceCount++;
           }
           for (Direction direction : Direction.values()) {
             BlockPos nPos = pos.relative(direction);

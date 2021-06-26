@@ -8,7 +8,7 @@ public class CompoundOresCommands {
   private CompoundOresCommands() {}
 
   public static void register(CommandDispatcher<CommandSource> dispatcher) {
-    CompoundOresDebugCommand.register(dispatcher);
+    CompoundOresCommand.register(dispatcher);
   }
 
 }

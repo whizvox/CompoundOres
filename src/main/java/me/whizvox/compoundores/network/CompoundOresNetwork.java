@@ -29,7 +29,7 @@ public class CompoundOresNetwork {
     }
 
     int id = 0;
-    CHANNEL.registerMessage(id++, GenerateComponentsPacket.class, CompoundOresNetwork::noEncode, GenerateComponentsPacket::decode, GenerateComponentsPacket::handle);
+    CHANNEL.registerMessage(id, GeneratePacket.class, GeneratePacket::encode, GeneratePacket::decode, GeneratePacket::handle);
 
     initialized = true;
   }

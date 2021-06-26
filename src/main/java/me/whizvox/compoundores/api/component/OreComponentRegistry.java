@@ -4,8 +4,8 @@ import com.google.gson.JsonParseException;
 import me.whizvox.compoundores.CompoundOres;
 import me.whizvox.compoundores.api.util.ComponentLootTable;
 import me.whizvox.compoundores.config.CompoundOresConfig;
-import me.whizvox.compoundores.util.JsonHelper;
-import me.whizvox.compoundores.util.PathHelper;
+import me.whizvox.compoundores.helper.JsonHelper;
+import me.whizvox.compoundores.helper.PathHelper;
 import me.whizvox.compoundores.util.RegistryWrapper;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static me.whizvox.compoundores.CompoundOres.LOGGER;
@@ -37,15 +38,16 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   private Map<ResourceLocation, OreComponent> nonEmptyRegistry;
   private List<OreComponent> sortedComponents;
-  private TreeMap<Integer, OreComponent> weighedValues;
-  private final AtomicInteger totalWeight;
-  private Map<ResourceLocation, List<OreComponent>> blockComponentLookupMap;
+  private Map<ResourceLocation, List<OreComponent>> blockLookupMap;
+  private Map<String, Collection<ResourceLocation>> originalGroups;
+  private Map<ResourceLocation, Set<OreComponent>> groups;
   private Map<ResourceLocation, ComponentLootTable> lootTables;
 
   private OreComponentRegistry(IForgeRegistry<OreComponent> registry) {
     super(registry);
-    totalWeight = new AtomicInteger(0);
     nonEmptyRegistry = null;
+    originalGroups = new HashMap<>();
+    groups = new HashMap<>();
   }
 
   private void resolveCaches() {
@@ -53,18 +55,13 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       LOGGER.info(REGISTRY, "Resolving ore component registry wrapper's caches");
       // Resolve additional map that only contains targets that have at least 1 resolved block
       nonEmptyRegistry = new HashMap<>();
-      // Also update the total weight to only consider these values
-      totalWeight.set(0);
-      // Also update the weighted component map
-      weighedValues = new TreeMap<>();
-      blockComponentLookupMap = new HashMap<>();
+      blockLookupMap = new HashMap<>();
       getValues().forEach(oreComp -> {
         Set<Block> resolved = oreComp.getTarget().getResolvedTargets();
-        if (!resolved.isEmpty()) {
+        if (!oreComp.isEmpty() && !resolved.isEmpty()) {
           nonEmptyRegistry.put(oreComp.getRegistryName(), oreComp);
-          weighedValues.put(totalWeight.getAndAdd(oreComp.getWeight()), oreComp);
           resolved.forEach(block -> {
-            List<OreComponent> oreComponents = blockComponentLookupMap.computeIfAbsent(block.getRegistryName(), o -> new ArrayList<>());
+            List<OreComponent> oreComponents = blockLookupMap.computeIfAbsent(block.getRegistryName(), o -> new ArrayList<>());
             if (!oreComponents.contains(oreComp)) {
               oreComponents.add(oreComp);
             }
@@ -72,15 +69,44 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         }
       });
       nonEmptyRegistry = Collections.unmodifiableMap(nonEmptyRegistry);
-      blockComponentLookupMap = Collections.unmodifiableMap(blockComponentLookupMap);
+      blockLookupMap = Collections.unmodifiableMap(blockLookupMap);
 
+      try {
+        loadGroupsFromDirectory(PathHelper.GROUPS_DIR).forEach((file, items) -> {
+          items.forEach(compName -> {
+            OreComponent comp = nonEmptyRegistry.get(compName);
+            if (comp != null) {
+              Set<OreComponent> affiliated = new HashSet<>();
+              items.stream().filter(compName2 -> !compName2.equals(compName)).forEach(compName2 -> {
+                OreComponent comp2 = nonEmptyRegistry.get(compName2);
+                if (comp2 != null) {
+                  affiliated.add(comp2);
+                }
+              });
+              if (groups.containsKey(compName)) {
+                LOGGER.debug(REGISTRY, "Overwriting default component group affiliation for {}", compName);
+              }
+              groups.put(compName, Collections.unmodifiableSet(affiliated));
+            }
+          });
+          originalGroups.put(file, items);
+        });
+      } catch (IOException e) {
+        LOGGER.error(REGISTRY, "Could not load groups from directory: " + PathHelper.GROUPS_DIR, e);
+      }
+
+      List<ResourceLocation> primaryExceptions = CompoundOresConfig.COMMON.primaryComponentsExceptions();
+      boolean primaryWhitelist = CompoundOresConfig.COMMON.primaryComponentsWhitelist();
       lootTables = new HashMap<>();
-      nonEmptyRegistry.forEach((key, oreComp) -> lootTables.put(key, ComponentLootTable.create(oreComp)));
+      nonEmptyRegistry.values().stream()
+        // don't create a loot table for configured primary component exceptions
+        .filter(c -> (primaryWhitelist && primaryExceptions.contains(c.getRegistryName())) || (!primaryWhitelist && !primaryExceptions.contains(c.getRegistryName())))
+        .forEach(oreComp -> lootTables.put(oreComp.getRegistryName(), ComponentLootTable.create(oreComp)));
       lootTables = Collections.unmodifiableMap(lootTables);
 
       // Resolve sorted components list
       sortedComponents = new ArrayList<>(nonEmptyRegistry.values());
-      sortedComponents.sort(Comparator.comparing(o -> o.getRegistryName()));
+      sortedComponents.sort(Comparator.comparing(OreComponent::getRegistryName));
       sortedComponents = Collections.unmodifiableList(sortedComponents);
     }
   }
@@ -92,6 +118,29 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   public ComponentLootTable getLootTable(OreComponent oreComp) {
     return getLootTables().getOrDefault(oreComp.getRegistryName(), ComponentLootTable.EMPTY);
+  }
+
+  public Set<OreComponent> getGroup(OreComponent comp) {
+    return Collections.unmodifiableSet(groups.getOrDefault(comp.getRegistryName(), Collections.emptySet()));
+  }
+
+  public void forEachGroup(BiConsumer<? super String, ? super Collection<ResourceLocation>> action) {
+    originalGroups.forEach(action);
+  }
+
+  public void addGroup(String name, Collection<OreComponent> components) {
+    if (components.size() > 1) {
+      components.forEach(comp1 -> {
+        List<OreComponent> affiliated = new ArrayList<>();
+        components.stream().filter(comp2 -> !comp2.equals(comp1)).forEach(affiliated::add);
+        groups.computeIfAbsent(comp1.getRegistryName(), k -> new HashSet<>()).addAll(affiliated);
+      });
+      originalGroups.put(name, components.stream().map(OreComponent::getRegistryName).collect(Collectors.toList()));
+    } else if (components.size() == 1) {
+      LOGGER.warn(REGISTRY, "Attempted to add an ore component group of invalid size (0 or 1): {}", components.stream().findFirst().get());
+    } else {
+      LOGGER.warn(REGISTRY, "Attempted to add an empty ore component group");
+    }
   }
 
   /**
@@ -221,7 +270,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
    */
   public OreComponent getComponentFromBlock(Block block, Random rand) {
     resolveCaches();
-    List<OreComponent> oreComponents = blockComponentLookupMap.getOrDefault(block.getRegistryName(), Collections.emptyList());
+    List<OreComponent> oreComponents = blockLookupMap.getOrDefault(block.getRegistryName(), Collections.emptyList());
     if (oreComponents.isEmpty()) {
       return OreComponent.EMPTY;
     }
@@ -305,6 +354,28 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       }
     });
     return count.get();
+  }
+
+  private static Map<String, List<ResourceLocation>> loadGroupsFromDirectory(Path dir) throws IOException {
+    Map<String, List<ResourceLocation>> groups = new HashMap<>();
+    Files.walk(dir, 1).filter(p -> p.getFileName().toString().endsWith(".json")).forEach(p -> {
+      try (Reader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
+        String[] componentStr = JsonHelper.GSON.fromJson(reader, String[].class);
+        List<ResourceLocation> list = new ArrayList<>();
+        for (String nameStr : componentStr) {
+          ResourceLocation name = new ResourceLocation(nameStr);
+          list.add(name);
+        }
+        groups.put(FilenameUtils.getBaseName(p.getFileName().toString()), list);
+      } catch (JsonParseException | IOException e) {
+        if (CompoundOresConfig.COMMON.ignoreBadComponents()) {
+          LOGGER.error(REGISTRY, "Could not read group definition from " + p, e);
+        } else {
+          throw new RuntimeException("Failed to read group definition from " + p, e);
+        }
+      }
+    });
+    return groups;
   }
 
 }

@@ -15,6 +15,7 @@ public class CompoundOresCommonConfig {
   private final ForgeConfigSpec.BooleanValue mRegisterDefaultComponents;
   private final ForgeConfigSpec.BooleanValue mGenerateCompoundOres;
   private final ForgeConfigSpec.IntValue mSpawnChecks;
+  private final ForgeConfigSpec.IntValue mMaxReplaceCount;
   private final ForgeConfigSpec.ConfigValue<List<? extends String>> mComponentsExceptions;
   private final ForgeConfigSpec.BooleanValue mComponentsWhitelist;
   private final ForgeConfigSpec.ConfigValue<List<? extends String>> mPrimaryComponentsExceptions;
@@ -53,6 +54,9 @@ public class CompoundOresCommonConfig {
     mSpawnChecks = builder
       .comment("How many times per chunk to check for ores to replace with compound ores")
       .defineInRange("spawnChecks", 55, 1, 500);
+    mMaxReplaceCount = builder
+      .comment("The maximum number of target blocks to replace when generating a compound ore vein")
+      .defineInRange("maxReplaceCount", 20, 1, 500);
 
     // Need to do some major refactoring to have these make sense
     mPrimaryComponentsWhitelist = builder
@@ -96,6 +100,10 @@ public class CompoundOresCommonConfig {
 
   public int spawnChecks() {
     return mSpawnChecks.get();
+  }
+
+  public int maxReplaceCount() {
+    return mMaxReplaceCount.get();
   }
 
   public List<ResourceLocation> componentsExceptions() {
