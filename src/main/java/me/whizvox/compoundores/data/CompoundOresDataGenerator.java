@@ -1,5 +1,6 @@
 package me.whizvox.compoundores.data;
 
+import me.whizvox.compoundores.data.provider.COBlockStateProvider;
 import me.whizvox.compoundores.data.provider.COBlockTagProvider;
 import me.whizvox.compoundores.data.provider.COItemTagProvider;
 import net.minecraft.data.DataGenerator;
@@ -18,7 +19,7 @@ public class CompoundOresDataGenerator {
     DataGenerator dataGen = event.getGenerator();
     ExistingFileHelper fileHelper = event.getExistingFileHelper();
     if (event.includeClient()) {
-      // TODO Generate assets
+      dataGen.addProvider(new COBlockStateProvider(dataGen, fileHelper));
     }
     if (event.includeServer()) {
       COBlockTagProvider blockTagProvider = new COBlockTagProvider(dataGen, fileHelper);

@@ -8,6 +8,7 @@ public class Markers {
   public static final Marker
       REGISTRY = MarkerManager.getMarker("REGISTRY"),
       SERVER = MarkerManager.getMarker("SERVER"),
-      CLIENT = MarkerManager.getMarker("CLIENT");
+      CLIENT = MarkerManager.getMarker("CLIENT"),
+      DATAGEN = MarkerManager.getMarker("DATAGEN");
 
 }
