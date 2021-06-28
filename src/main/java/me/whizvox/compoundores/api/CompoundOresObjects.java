@@ -14,6 +14,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ITag;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
@@ -43,6 +46,9 @@ public class CompoundOresObjects {
   private static final ResourceLocation
     PREFERRED_ITEMGROUP_ICON_PRIMARY = new ResourceLocation("compoundores:coal"),
     PREFERRED_ITEMGROUP_ICON_SECONDARY = new ResourceLocation("compoundores:diamond");
+
+  public static final ITag.INamedTag<Block> COMPOUND_ORES_BLOCK_TAG = BlockTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
+  public static final ITag.INamedTag<Item> COMPOUND_ORES_ITEM_TAG = ItemTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
 
   public static Map<ResourceLocation, CompoundOreBlock> blocks;
   public static Map<ResourceLocation, CompoundOreBlockItem> blockItems;

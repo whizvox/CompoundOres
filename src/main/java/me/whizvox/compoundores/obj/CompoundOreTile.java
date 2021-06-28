@@ -58,7 +58,7 @@ public class CompoundOreTile extends TileEntity {
 
   @Override
   public CompoundNBT save(CompoundNBT tag) {
-    if (secondaryComponent != null) {
+    if (secondaryComponent != null && !secondaryComponent.isEmpty()) {
       tag.putString(TAG_SECONDARY_ORE, secondaryComponent.getRegistryName().toString());
     }
     return super.save(tag);

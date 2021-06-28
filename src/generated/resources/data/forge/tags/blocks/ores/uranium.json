@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "compoundores:compound_ore_uranium",
+    "compoundores:compound_ore_yellorite"
+  ]
+}
