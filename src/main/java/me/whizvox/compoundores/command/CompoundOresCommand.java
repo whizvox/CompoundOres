@@ -11,15 +11,18 @@ import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.helper.NBTHelper;
 import me.whizvox.compoundores.helper.WorldHelper;
 import me.whizvox.compoundores.network.CompoundOresNetwork;
-import me.whizvox.compoundores.network.GeneratePacket;
+import me.whizvox.compoundores.network.ExportComponentsPacket;
+import me.whizvox.compoundores.network.ExportOreDistributionPacket;
 import me.whizvox.compoundores.obj.CompoundOreBlock;
 import me.whizvox.compoundores.obj.CompoundOreBlockItem;
 import me.whizvox.compoundores.util.COBlockSnapshot;
+import me.whizvox.compoundores.util.OreDistribution;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
+import net.minecraft.command.arguments.BlockStateArgument;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -35,6 +38,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.Tags;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +54,13 @@ public class CompoundOresCommand {
     MSG_ITEMTAGS_NO_ITEM = new TranslationTextComponent("message.compoundores.debugCommand.itemtags.noItem"),
     MSG_ITEMTAGS_NO_TAGS = new TranslationTextComponent("message.compoundores.debugCommand.itemtags.noTags"),
     MSG_BLOCKTAGS_NO_BLOCK = new TranslationTextComponent("message.compoundores.debugCommand.blocktags.noBlock"),
-    MSG_BLOCKTAGS_NO_TAGS = new TranslationTextComponent("message.compoundores.debugCommand.blocktags.noTags");
+    MSG_BLOCKTAGS_NO_TAGS = new TranslationTextComponent("message.compoundores.debugCommand.blocktags.noTags"),
+    MSG_OREDIST_CLEAR_NONE = new TranslationTextComponent("message.compoundores.debugCommand.oredist.clear.none"),
+    MSG_OREDIST_CLEAR_SINGLE = new TranslationTextComponent("message.compoundores.debugCommand.oredist.clear.success", new StringTextComponent("1").withStyle(TextFormatting.YELLOW)),
+    MSG_OREDIST_VIEW_GENERAL_ALL = new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.general.header", new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.all").withStyle(TextFormatting.YELLOW)),
+    MSG_OREDIST_VIEW_LEVELS_ALL = new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.levels.header", new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.all").withStyle(TextFormatting.YELLOW)),
+    MSG_OREDIST_VIEW_NODIST = new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.noDist"),
+    MSG_OREDIST_VIEW_NODATA = new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.noData");
 
   private static boolean shouldExecute(CommandSource src, int permissionLevel) {
     return src.getEntity() instanceof PlayerEntity && src.getEntity().hasPermissions(permissionLevel);
@@ -58,12 +68,12 @@ public class CompoundOresCommand {
 
   public static void register(CommandDispatcher<CommandSource> dispatcher) {
     LiteralArgumentBuilder<CommandSource> builder = Commands.literal("compores")
-      .then(Commands.literal("generate")
+      .then(Commands.literal("export")
         .requires(src -> shouldExecute(src, 2))
-        .executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.BOTH))
-        .then(Commands.literal("both").executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.BOTH)))
-        .then(Commands.literal("components").executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.COMPONENTS)))
-        .then(Commands.literal("groups").executes(ctx -> generateCompounds(ctx, GeneratePacket.Which.GROUPS)))
+        .executes(ctx -> exportComponents(ctx, ExportComponentsPacket.Which.BOTH))
+        .then(Commands.literal("both").executes(ctx -> exportComponents(ctx, ExportComponentsPacket.Which.BOTH)))
+        .then(Commands.literal("components").executes(ctx -> exportComponents(ctx, ExportComponentsPacket.Which.COMPONENTS)))
+        .then(Commands.literal("groups").executes(ctx -> exportComponents(ctx, ExportComponentsPacket.Which.GROUPS)))
       )
       .then(Commands.literal("give")
         .requires(src -> shouldExecute(src, 2))
@@ -80,8 +90,8 @@ public class CompoundOresCommand {
       LOGGER.info(SERVER, "Registering CompoundOres debug subcommands");
       builder
         .then(Commands.literal("itemtags")
-        .requires(src -> shouldExecute(src, 2))
-        .executes(CompoundOresCommand::itemTags)
+          .requires(src -> shouldExecute(src, 2))
+          .executes(CompoundOresCommand::itemTags)
         )
         .then(Commands.literal("blocktags")
           .requires(src -> shouldExecute(src, 2))
@@ -89,17 +99,43 @@ public class CompoundOresCommand {
         )
         .then(Commands.literal("cleararea")
           .requires(src -> shouldExecute(src, 4))
-          .executes(ctx -> clearArea(ctx, true))
+          .executes(src -> clearArea(src, true))
           .then(Commands.literal("allores").executes(ctx -> clearArea(ctx, false)))
           .then(Commands.literal("restore").executes(CompoundOresCommand::undoClearedArea))
         )
         .then(Commands.literal("collage")
           .requires(src -> shouldExecute(src, 2))
-          .executes(ctx -> createCollage(ctx, false))
-          .then(Commands.literal("all")
-            .executes(ctx -> createCollage(ctx, true))
+          .executes(src -> createCollage(src, false))
+          .then(Commands.literal("all").executes(ctx -> createCollage(ctx, true)))
         )
-      );
+        .then(Commands.literal("oredist")
+          .requires(src -> shouldExecute(src, 2))
+          .then(Commands.literal("create")
+            .executes(ctx -> createOreDistribution(ctx, 4))
+            .then(Commands.argument("radius", IntegerArgumentType.integer(1, OreDistribution.MAX_CHUNK_RADIUS))
+              .executes(ctx -> createOreDistribution(ctx, IntegerArgumentType.getInteger(ctx, "radius")))
+            )
+          )
+          .then(Commands.literal("view")
+            .executes(ctx -> viewOreDistribution(ctx, true, Blocks.AIR))
+            .then(Commands.literal("general")
+              .executes(ctx -> viewOreDistribution(ctx, true, Blocks.AIR))
+              .then(Commands.argument("filter", BlockStateArgument.block())
+                .executes(ctx -> viewOreDistribution(ctx, true, BlockStateArgument.getBlock(ctx, "filter").getState().getBlock()))
+              )
+            ).then(Commands.literal("levels")
+              .executes(ctx -> viewOreDistribution(ctx, false, Blocks.AIR))
+              .then(Commands.argument("filter", BlockStateArgument.block())
+                .executes(ctx -> viewOreDistribution(ctx, false, BlockStateArgument.getBlock(ctx, "filter").getState().getBlock()))
+              )
+            )
+          )
+          .then(Commands.literal("export").executes(CompoundOresCommand::exportOreDistribution))
+          .then(Commands.literal("clear").
+            executes(ctx -> clearOreDistribution(ctx, false))
+            .then(Commands.literal("all").executes(ctx -> clearOreDistribution(ctx, true)))
+          )
+        );
     }
     LOGGER.debug(SERVER, "Registering CompoundOres /compores command");
     dispatcher.register(builder);
@@ -186,8 +222,8 @@ public class CompoundOresCommand {
     return 1;
   }
 
-  private static int generateCompounds(CommandContext<CommandSource> ctx, GeneratePacket.Which which) {
-    CompoundOresNetwork.sendToPlayer(new GeneratePacket(which), (ServerPlayerEntity) ctx.getSource().getEntity());
+  private static int exportComponents(CommandContext<CommandSource> ctx, ExportComponentsPacket.Which which) {
+    CompoundOresNetwork.sendToPlayer(new ExportComponentsPacket(which), (ServerPlayerEntity) ctx.getSource().getEntity());
     return 1;
   }
 
@@ -223,6 +259,115 @@ public class CompoundOresCommand {
       zoff.getAndIncrement();
     });
     return 1;
+  }
+
+  private static Map<UUID, OreDistribution> oreDistributions = new HashMap<>();
+
+  private static int clearOreDistribution(CommandContext<CommandSource> ctx, boolean forAll) {
+    PlayerEntity player = (PlayerEntity) ctx.getSource().getEntity();
+    if (forAll) {
+      if (oreDistributions.isEmpty()) {
+        player.displayClientMessage(MSG_OREDIST_CLEAR_NONE, false);
+      } else {
+        int size = oreDistributions.size();
+        oreDistributions.clear();
+        if (size == 1) {
+          player.displayClientMessage(MSG_OREDIST_CLEAR_SINGLE, false);
+        } else {
+          player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.oredist.clear.success",
+            new StringTextComponent(Integer.toString(size)).withStyle(TextFormatting.YELLOW)), false);
+        }
+      }
+    } else {
+      if (oreDistributions.containsKey(player.getUUID())) {
+        oreDistributions.remove(player.getUUID());
+        player.displayClientMessage(MSG_OREDIST_CLEAR_SINGLE, false);
+      } else {
+        player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.oredist.clear.playerNone",
+          player.getDisplayName()), false);
+      }
+    }
+    return 1;
+  }
+
+  private static int createOreDistribution(CommandContext<CommandSource> ctx, int radius) {
+    PlayerEntity player = (PlayerEntity) ctx.getSource().getEntity();
+    World world = player.getCommandSenderWorld();
+    OreDistribution oreDist = OreDistribution.create(world, player.blockPosition(), radius);
+    oreDistributions.put(player.getUUID(), oreDist);
+    player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.oredist.create.success",
+      new StringTextComponent(Integer.toString(oreDist.getChunksScanned().size())).withStyle(TextFormatting.YELLOW),
+      new StringTextComponent(Integer.toString(oreDist.getTotalMatching())).withStyle(TextFormatting.AQUA)), false);
+    return 1;
+  }
+
+  private static int viewOreDistribution(CommandContext<CommandSource> ctx, boolean general, Block block) {
+    PlayerEntity player = (PlayerEntity) ctx.getSource().getEntity();
+    OreDistribution dist = oreDistributions.get(player.getUUID());
+    if (dist == null) {
+      throw new CommandException(MSG_OREDIST_VIEW_NODIST);
+    }
+    if (general) {
+      if (block.is(Blocks.AIR)) {
+        player.displayClientMessage(MSG_OREDIST_VIEW_GENERAL_ALL, false);
+        dist.getGeneralDistribution().forEach((blockKey, count) -> displayGeneralOreDistData(player, blockKey, count));
+      } else {
+        player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.general.header",
+          new StringTextComponent(block.getRegistryName().toString()).withStyle(TextFormatting.YELLOW)), false);
+        displayGeneralOreDistData(player, block.getRegistryName(), dist.getGeneralDistribution().getOrDefault(block.getRegistryName(), 0));
+      }
+    } else {
+      if (block.is(Blocks.AIR)) {
+        player.displayClientMessage(MSG_OREDIST_VIEW_LEVELS_ALL, false);
+        dist.getLevelsDistribution().forEach((blockKey, levelsData) -> displayLevelsOreDistData(player, blockKey, levelsData));
+      } else {
+        player.displayClientMessage(new TranslationTextComponent("message.compoundores.debugCommand.oredist.view.levels.header",
+            new StringTextComponent(block.getRegistryName().toString()).withStyle(TextFormatting.YELLOW)), false);
+        displayLevelsOreDistData(player, block.getRegistryName(), dist.getLevelsDistribution().getOrDefault(block.getRegistryName(), Collections.emptyMap()));
+      }
+    }
+    return 1;
+  }
+
+  private static int exportOreDistribution(CommandContext<CommandSource> ctx) {
+    OreDistribution dist = oreDistributions.get(ctx.getSource().getEntity().getUUID());
+    if (dist == null) {
+      throw new CommandException(MSG_OREDIST_VIEW_NODIST);
+    }
+    CompoundOresNetwork.sendToPlayer(new ExportOreDistributionPacket(dist), (ServerPlayerEntity) ctx.getSource().getEntity());
+    return 1;
+  }
+
+  private static void displayGeneralOreDistData(PlayerEntity player, ResourceLocation blockKey, int count) {
+    player.displayClientMessage(new StringTextComponent("- ")
+        .append(new StringTextComponent(blockKey.toString()).withStyle(TextFormatting.YELLOW))
+        .append(new StringTextComponent(": ").withStyle(TextFormatting.RESET))
+        .append(new StringTextComponent(Integer.toString(count)).withStyle(TextFormatting.AQUA)),
+      false
+    );
+  }
+
+  private static void displayLevelsOreDistData(PlayerEntity player, ResourceLocation blockKey, Map<Integer, Integer> levelsData) {
+    if (levelsData.isEmpty()) {
+      player.displayClientMessage(new StringTextComponent("- ")
+        .append(new StringTextComponent(blockKey.toString()).withStyle(TextFormatting.YELLOW))
+        .append(new StringTextComponent(":").withStyle(TextFormatting.RESET))
+        .append(MSG_OREDIST_VIEW_NODATA), false
+      );
+    }
+    List<Pair<Integer, Integer>> sortedLevelsData = levelsData.entrySet().stream().map(entry -> Pair.of(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+    sortedLevelsData.sort(Comparator.comparingInt(Pair::getLeft));
+    player.displayClientMessage(new StringTextComponent("- ")
+        .append(new StringTextComponent(blockKey.toString()).withStyle(TextFormatting.YELLOW))
+        .append(new StringTextComponent(":").withStyle(TextFormatting.RESET)), false
+    );
+    sortedLevelsData.forEach(pair -> {
+      player.displayClientMessage(new StringTextComponent("  - ")
+          .append(new StringTextComponent(Integer.toString(pair.getLeft())).withStyle(TextFormatting.GRAY))
+          .append(new StringTextComponent(": ").withStyle(TextFormatting.RESET))
+          .append(new StringTextComponent(Integer.toString(pair.getRight())).withStyle(TextFormatting.AQUA)), false
+      );
+    });
   }
 
 }

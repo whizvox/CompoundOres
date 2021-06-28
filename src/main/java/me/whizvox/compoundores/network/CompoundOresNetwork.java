@@ -29,7 +29,8 @@ public class CompoundOresNetwork {
     }
 
     int id = 0;
-    CHANNEL.registerMessage(id, GeneratePacket.class, GeneratePacket::encode, GeneratePacket::decode, GeneratePacket::handle);
+    CHANNEL.registerMessage(id++, ExportComponentsPacket.class, ExportComponentsPacket::encode, ExportComponentsPacket::decode, ExportComponentsPacket::handle);
+    CHANNEL.registerMessage(id, ExportOreDistributionPacket.class, ExportOreDistributionPacket::encode, ExportOreDistributionPacket::decode, ExportOreDistributionPacket::handle);
 
     initialized = true;
   }

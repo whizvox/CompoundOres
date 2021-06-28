@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "compoundores:block/compound_ore_base/yellorium"
+    "all": "compoundores:block/compound_ore_base/yellorite"
   }
 }

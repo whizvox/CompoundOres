@@ -28,7 +28,7 @@ repositories {
   }
 }
 
-version = 'dev-20200625'
+version = 'dev-20200627'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 

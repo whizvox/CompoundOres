@@ -24,11 +24,11 @@ import java.util.stream.Collectors;
 import static me.whizvox.compoundores.CompoundOres.LOGGER;
 import static me.whizvox.compoundores.helper.Markers.CLIENT;
 
-public class GeneratePacket {
+public class ExportComponentsPacket {
 
   public final Which which;
 
-  public GeneratePacket(Which which) {
+  public ExportComponentsPacket(Which which) {
     this.which = which;
   }
 
@@ -38,47 +38,47 @@ public class GeneratePacket {
     BOTH
   }
 
-  public static void encode(GeneratePacket message, PacketBuffer buffer) {
+  public static void encode(ExportComponentsPacket message, PacketBuffer buffer) {
     buffer.writeEnum(message.which);
   }
 
-  public static GeneratePacket decode(PacketBuffer buffer) {
-    return new GeneratePacket(buffer.readEnum(Which.class));
+  public static ExportComponentsPacket decode(PacketBuffer buffer) {
+    return new ExportComponentsPacket(buffer.readEnum(Which.class));
   }
 
-  public static void handle(GeneratePacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
+  public static void handle(ExportComponentsPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
     contextSupplier.get().enqueueWork(() -> {
       AtomicInteger count = new AtomicInteger(0);
       if (packet.which == Which.COMPONENTS || packet.which == Which.BOTH) {
         OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
-          final Path genFilePath = PathHelper.GEN_COMPONENTS_DIR.resolve(oreComp.getRegistryName().getPath() + ".json");
+          final Path genFilePath = PathHelper.EXPORT_COMPONENTS_DIR.resolve(oreComp.getRegistryName().getPath() + ".json");
           try (Writer out = Files.newBufferedWriter(genFilePath, StandardCharsets.UTF_8)) {
             JsonHelper.GSON.toJson(oreComp, out);
-            LOGGER.debug(CLIENT, "Generated JSON for ore component {} at {}", oreComp.getRegistryName(), genFilePath);
+            LOGGER.debug(CLIENT, "Exported JSON for ore component {} at {}", oreComp.getRegistryName(), genFilePath);
             count.incrementAndGet();
           } catch (IOException e) {
-            LOGGER.error(CLIENT, "Could not generate JSON file for ore component: " + genFilePath, e);
+            LOGGER.error(CLIENT, "Could not export JSON file for ore component: " + genFilePath, e);
           }
         });
       }
       if (packet.which == Which.GROUPS || packet.which == Which.BOTH) {
         OreComponentRegistry.getInstance().forEachGroup((name, group) -> {
-          final Path genFilePath = PathHelper.GEN_GROUPS_DIR.resolve(name + ".json");
+          final Path genFilePath = PathHelper.EXPORT_GROUPS_DIR.resolve(name + ".json");
           try (Writer out = Files.newBufferedWriter(genFilePath, StandardCharsets.UTF_8)) {
             JsonHelper.GSON.toJson(group.stream().map(ResourceLocation::toString).collect(Collectors.toList()), out);
-            LOGGER.debug(CLIENT, "Generate JSON file for group {} at {}", name, genFilePath);
+            LOGGER.debug(CLIENT, "Exported JSON file for group {} at {}", name, genFilePath);
             count.incrementAndGet();
           } catch (IOException e) {
-            LOGGER.error(CLIENT, "Could not generate JSON file for group: " + genFilePath, e);
+            LOGGER.error(CLIENT, "Could not export JSON file for group: " + genFilePath, e);
           }
         });
       }
-      LOGGER.info(CLIENT, "Generated {} JSON files for {}", count.get(), packet.which == Which.BOTH ? "components and groups" : packet.which.toString().toLowerCase());
+      LOGGER.info(CLIENT, "Exported {} JSON files for {}", count.get(), packet.which == Which.BOTH ? "components and groups" : packet.which.toString().toLowerCase());
       Minecraft.getInstance().player.displayClientMessage(
         new TranslationTextComponent("message.compoundores.debugCommand.generate." + packet.which.toString().toLowerCase(),
-          new StringTextComponent("compoundores/generated")
+          new StringTextComponent("compoundores/export")
             .withStyle(TextFormatting.UNDERLINE)
-            .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, PathHelper.GENERATED_DIR.toString())))
+            .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, PathHelper.EXPORT_DIR.toString())))
         ), false
       );
     });

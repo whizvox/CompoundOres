@@ -2,8 +2,10 @@ package me.whizvox.compoundores.api.component;
 
 import me.whizvox.compoundores.CompoundOres;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ToolType;
 
 import java.util.Arrays;
 
@@ -21,7 +23,7 @@ public class OreComponents {
       NETHER_GOLD,
       NETHER_QUARTZ,
       ANCIENT_DEBRIS,
-      // Common modded ores
+      // Commonly-used ore tags
       COPPER,
       TIN,
       ALUMINUM,
@@ -38,7 +40,7 @@ public class OreComponents {
       PLATINUM,
       SULFUR,
       FLUORITE,
-      YELLORIUM,
+      YELLORITE,
       // RFToolsBase
       DIMENSIONAL_SHARD_OVERWORLD,
       DIMENSIONAL_SHARD_NETHER,
@@ -81,17 +83,15 @@ public class OreComponents {
     PLATINUM = registerFirstInOreTag("platinum", OreComponent.builder().weight(1).harvestLevel(3));
     SULFUR = registerFirstInOreTag("sulfur", OreComponent.builder().weight(7).harvestLevel(2));
     FLUORITE = registerFirstInOreTag("fluorite", OreComponent.builder().weight(3).harvestLevel(2));
-    YELLORIUM = registerFirstInOreTag("yellorium", OreComponent.builder().weight(2).harvestLevel(2));
-    DIMENSIONAL_SHARD_OVERWORLD = registerFromBlockName("dimensionalshard_overworld", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().weight(3).harvestLevel(1));
-    DIMENSIONAL_SHARD_NETHER = registerFromBlockName("dimensionalshard_nether", "rftoolsbase:dimensionalshard_nether", OreComponent.builder().weight(2).harvestLevel(1));
-    DIMENSIONAL_SHARD_END = registerFromBlockName("dimensionalshard_end", "rftoolsbase:dimensionalshard_end", OreComponent.builder().weight(2).harvestLevel(1));
+    YELLORITE = registerFirstInOreTag("yellorite", OreComponent.builder().weight(2).harvestLevel(2));
+    DIMENSIONAL_SHARD_OVERWORLD = registerFromBlockName("dimensionalshard_overworld", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().resistance(5.0F).weight(3).harvestLevel(1));
+    DIMENSIONAL_SHARD_NETHER = registerFromBlockName("dimensionalshard_nether", "rftoolsbase:dimensionalshard_nether", OreComponent.builder().resistance(5.0F).weight(2).harvestLevel(1));
+    DIMENSIONAL_SHARD_END = registerFromBlockName("dimensionalshard_end", "rftoolsbase:dimensionalshard_end", OreComponent.builder().resistance(5.0F).weight(2).harvestLevel(1));
     URANINITE_POOR = registerFromBlockName("uraninite_poor", "powah:uraninite_ore_poor", OreComponent.builder().weight(5).resistance(8.0F));
     URANINITE = registerFromBlockName("uraninite", "powah:uraninite_ore", OreComponent.builder().weight(3).hardness(3.2F).resistance(8.0F));
     URANINITE_DENSE = registerFromBlockName("uraninite_dense", "powah:uraninite_ore_dense", OreComponent.builder().weight(1).hardness(4.0F).resistance(8.0F));
 
-    addGroup("gold", GOLD, NETHER_GOLD);
     addGroup("dimensionalshard", DIMENSIONAL_SHARD_OVERWORLD, DIMENSIONAL_SHARD_NETHER, DIMENSIONAL_SHARD_END);
-    addGroup("uraninite", URANINITE_POOR, URANINITE, URANINITE_DENSE);
 
     initialized = true;
   }
