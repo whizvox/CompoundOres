@@ -3,8 +3,9 @@ package me.whizvox.compoundores.util;
 import com.google.gson.*;
 import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.api.target.BlockTargets;
+import me.whizvox.compoundores.api.util.NamedMaterial;
 import me.whizvox.compoundores.api.util.NamedMaterialColor;
-import net.minecraft.block.material.MaterialColor;
+import me.whizvox.compoundores.api.util.NamedSoundType;
 import net.minecraftforge.common.ToolType;
 
 import java.lang.reflect.Type;
@@ -90,35 +91,34 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
     }
 
     // OPTIONAL
+    if (obj.has("material")) {
+      JsonElement materialElem = obj.get("material");
+      if (materialElem.isJsonPrimitive() && materialElem.getAsJsonPrimitive().isString()) {
+        builder.material(NamedMaterial.from(materialElem.getAsString()));
+      } else {
+        err("Material must be a string: " + materialElem);
+      }
+    }
+
+    // OPTIONAL
     if (obj.has("materialColor")) {
       JsonElement colorElem = obj.get("materialColor");
       if (colorElem.isJsonPrimitive() && colorElem.getAsJsonPrimitive().isString()) {
         if (colorElem.getAsJsonPrimitive().isString()) {
-        String matColorStr = colorElem.getAsString();
-          MaterialColor matColor = NamedMaterialColor.NAME_MAP.get(matColorStr).base;
-          if (matColor != null) {
-            builder.materialColor(matColor);
-          } else {
-            err("Material color string does not match any field: " + matColorStr);
-          }
+          builder.materialColor(NamedMaterialColor.from(colorElem.getAsString()));
         } else {
           err("Material color must either be a string: " + colorElem);
         }
       } else if (colorElem.isJsonPrimitive() && colorElem.getAsJsonPrimitive().isNumber()) {
-        int id = colorElem.getAsInt();
-        if (id >= 0 && id < MaterialColor.MATERIAL_COLORS.length) {
-          builder.materialColor(MaterialColor.MATERIAL_COLORS[id]);
-        } else {
-          err("Material color id is out of bounds [0,64): " + id);
-        }
+        builder.materialColor(NamedMaterialColor.from(colorElem.getAsInt()));
       } else {
         err("Material color must be a string: " + colorElem);
       }
     }
 
     // OPTIONAL
-    if (obj.has("harvestTool")) {
-      JsonElement toolElem = obj.get("harvestTool");
+    if (obj.has("tool")) {
+      JsonElement toolElem = obj.get("tool");
       if (toolElem.isJsonPrimitive() && toolElem.getAsJsonPrimitive().isString()) {
         ToolType harvestTool = ToolType.get(toolElem.getAsString());
         if (harvestTool == null) {
@@ -130,6 +130,16 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
         builder.tool(null);
       } else {
         err("Harvest tool must be a string: " + toolElem);
+      }
+    }
+
+    // OPTIONAL
+    if (obj.has("sound")) {
+      JsonElement soundElem = obj.get("sound");
+      if (soundElem.isJsonPrimitive() && soundElem.getAsJsonPrimitive().isString()) {
+        builder.sound(NamedSoundType.from(soundElem.getAsString()));
+      } else {
+        err("Sound must be a string: " + soundElem);
       }
     }
 
@@ -185,8 +195,18 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
     if (oreComp.getOverlayColor() != OreComponent.DefaultValues.OVERLAY_COLOR) {
       obj.addProperty("overlayColor", Integer.toString(oreComp.getOverlayColor(), 16));
     }
+    if (oreComp.getMaterial() != OreComponent.DefaultValues.MATERIAL) {
+      obj.addProperty("material", oreComp.getMaterial().name);
+    }
     if (oreComp.getMaterialColor() != OreComponent.DefaultValues.MATERIAL_COLOR) {
-      obj.addProperty("materialColor", NamedMaterialColor.ID_MAP.get(oreComp.getMaterialColor().id).name);
+      if (oreComp.getMaterialColor() == null) {
+        obj.add("materialColor", JsonNull.INSTANCE);
+      } else {
+        obj.addProperty("materialColor", oreComp.getMaterialColor().name);
+      }
+    }
+    if (oreComp.getSound() != OreComponent.DefaultValues.SOUND) {
+      obj.addProperty("sound", oreComp.getSound().name);
     }
     if (oreComp.getHarvestTool() != OreComponent.DefaultValues.HARVEST_TOOL) {
       if (oreComp.getHarvestTool() == null) {

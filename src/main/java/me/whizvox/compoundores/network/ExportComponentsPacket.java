@@ -11,6 +11,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.fml.network.NetworkEvent;
+import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -50,6 +51,11 @@ public class ExportComponentsPacket {
     contextSupplier.get().enqueueWork(() -> {
       AtomicInteger count = new AtomicInteger(0);
       if (packet.which == Which.COMPONENTS || packet.which == Which.BOTH) {
+        try {
+          FileUtils.cleanDirectory(PathHelper.EXPORT_COMPONENTS_DIR.toFile());
+        } catch (IOException e) {
+          LOGGER.error(CLIENT, "Could not clean out " + PathHelper.EXPORT_COMPONENTS_DIR, e);
+        }
         OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
           final Path genFilePath = PathHelper.EXPORT_COMPONENTS_DIR.resolve(oreComp.getRegistryName().getPath() + ".json");
           try (Writer out = Files.newBufferedWriter(genFilePath, StandardCharsets.UTF_8)) {
@@ -62,6 +68,11 @@ public class ExportComponentsPacket {
         });
       }
       if (packet.which == Which.GROUPS || packet.which == Which.BOTH) {
+        try {
+          FileUtils.cleanDirectory(PathHelper.EXPORT_GROUPS_DIR.toFile());
+        } catch (IOException e) {
+          LOGGER.error(CLIENT, "Could not clean out " + PathHelper.EXPORT_GROUPS_DIR, e);
+        }
         OreComponentRegistry.getInstance().forEachGroup((name, group) -> {
           final Path genFilePath = PathHelper.EXPORT_GROUPS_DIR.resolve(name + ".json");
           try (Writer out = Files.newBufferedWriter(genFilePath, StandardCharsets.UTF_8)) {

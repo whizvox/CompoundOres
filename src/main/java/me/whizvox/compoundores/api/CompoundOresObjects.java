@@ -11,7 +11,6 @@ import me.whizvox.compoundores.obj.CompoundOreTile;
 import me.whizvox.compoundores.world.feature.CompoundOreFeature;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tags.BlockTags;
@@ -84,9 +83,16 @@ public class CompoundOresObjects {
     Map<ResourceLocation, CompoundOreBlock> tempCompOres = new HashMap<>();
     OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
       if (!oreComp.isEmpty()) {
-        AbstractBlock.Properties props = AbstractBlock.Properties.of(Material.STONE, oreComp.getMaterialColor())
+        AbstractBlock.Properties props;
+        if (oreComp.getMaterialColor() == null) {
+          props = AbstractBlock.Properties.of(oreComp.getMaterial().material);
+        } else {
+          props = AbstractBlock.Properties.of(oreComp.getMaterial().material, oreComp.getMaterialColor().color);
+        }
+        props
           .strength(oreComp.getHardness(), oreComp.getResistance())
-          .harvestLevel(oreComp.getHarvestLevel());
+          .harvestLevel(oreComp.getHarvestLevel())
+          .sound(oreComp.getSound().sound);
         if (oreComp.getHarvestTool() != null) {
           props.requiresCorrectToolForDrops()
             .harvestTool(oreComp.getHarvestTool());

@@ -1,6 +1,9 @@
 package me.whizvox.compoundores.api.component;
 
 import me.whizvox.compoundores.CompoundOres;
+import me.whizvox.compoundores.api.util.NamedMaterial;
+import me.whizvox.compoundores.api.util.NamedMaterialColor;
+import me.whizvox.compoundores.api.util.NamedSoundType;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ResourceLocation;
@@ -62,9 +65,9 @@ public class OreComponents {
     REDSTONE = register("redstone", OreComponent.builder().target(Blocks.REDSTONE_ORE).weight(6).harvestLevel(2).build());
     DIAMOND = register("diamond", OreComponent.builder().target(Blocks.DIAMOND_ORE).weight(2).harvestLevel(2).build());
     EMERALD = register("emerald", OreComponent.builder().target(Blocks.EMERALD_ORE).weight(1).harvestLevel(2).build());
-    NETHER_GOLD = register("nether_gold", OreComponent.builder().target(Blocks.NETHER_GOLD_ORE).weight(8).build());
-    NETHER_QUARTZ = register("nether_quartz", OreComponent.builder().target(Blocks.NETHER_QUARTZ_ORE).weight(10).build());
-    ANCIENT_DEBRIS = register("ancient_debris", OreComponent.builder().target(Blocks.ANCIENT_DEBRIS).weight(1).hardness(30.0F).resistance(1200.0F).harvestLevel(3).build());
+    NETHER_GOLD = register("nether_gold", OreComponent.builder().target(Blocks.NETHER_GOLD_ORE).materialColor(NamedMaterialColor.NETHER).sound(NamedSoundType.NETHER_GOLD_ORE).weight(8).build());
+    NETHER_QUARTZ = register("nether_quartz", OreComponent.builder().target(Blocks.NETHER_QUARTZ_ORE).materialColor(NamedMaterialColor.NETHER).sound(NamedSoundType.NETHER_ORE).weight(10).build());
+    ANCIENT_DEBRIS = register("ancient_debris", OreComponent.builder().target(Blocks.ANCIENT_DEBRIS).material(NamedMaterial.METAL).materialColor(NamedMaterialColor.COLOR_BLACK).sound(NamedSoundType.ANCIENT_DEBRIS).weight(1).hardness(30.0F).resistance(1200.0F).harvestLevel(3).build());
     COPPER = registerFirstInOreTag("copper", OreComponent.builder().weight(9).harvestLevel(1));
     TIN = registerFirstInOreTag("tin", OreComponent.builder().weight(5).harvestLevel(1));
     ALUMINUM = registerFirstInOreTag("aluminum", OreComponent.builder().weight(5).harvestLevel(1));
