@@ -315,7 +315,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     if (CompoundOresConfig.COMMON.registerComponentsFromDirectory.get()) {
       final Path dir = PathHelper.COMPONENTS_DIR;
       try {
-        int count = registerAllFromDirectory(dir);
+        int count = registerComponentsFromDirectory(dir);
         if (count > 0) {
           LOGGER.info(REGISTRY, "{} new components registered from components directory: {}", count, dir);
         } else {
@@ -335,14 +335,14 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     }
   }
 
-  private static int registerAllFromDirectory(Path dir) throws IOException {
+  private static int registerComponentsFromDirectory(Path dir) throws IOException {
     AtomicInteger count = new AtomicInteger(0);
     Files.walk(dir, 1).filter(p -> p.getFileName().toString().endsWith(".json")).forEach(p -> {
       String baseName = FilenameUtils.getBaseName(p.getFileName().toString());
       try (Reader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
         OreComponent oreComp = JsonHelper.GSON.fromJson(reader, OreComponent.class);
         oreComp.setRegistryName(CompoundOres.MOD_ID, baseName);
-        instance.register(oreComp);
+        instance.registerChecked(oreComp);
         LOGGER.debug(REGISTRY, "Registered new ore component from {}", p);
         count.incrementAndGet();
       } catch (JsonParseException | IOException e) {
