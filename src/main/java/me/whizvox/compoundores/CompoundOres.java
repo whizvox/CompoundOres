@@ -39,16 +39,8 @@ public class CompoundOres {
     }
   };
 
-  private boolean shouldGenerate;
-
   public CompoundOres() {
     CompoundOresConfig.register(ModLoadingContext.get());
-    shouldGenerate = CompoundOresConfig.COMMON.generateCompoundOres();
-    if (shouldGenerate) {
-      LOGGER.debug("Set to generate compound ores in world");
-    } else {
-      LOGGER.info("Configured to NOT generate any compound ores");
-    }
 
     IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
     modBus.register(OreComponentRegistry.class);
@@ -76,7 +68,7 @@ public class CompoundOres {
 
   @SubscribeEvent
   public void onBiomeModify(final BiomeLoadingEvent event) {
-    if (shouldGenerate) {
+    if (CompoundOresConfig.COMMON.generateCompoundOres.get()) {
       event.getGeneration().getFeatures(GenerationStage.Decoration.UNDERGROUND_ORES).add(() -> CompoundOresObjects.configuredFeature);
     }
   }

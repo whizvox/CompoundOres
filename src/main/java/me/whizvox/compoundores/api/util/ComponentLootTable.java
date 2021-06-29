@@ -40,8 +40,8 @@ public class ComponentLootTable {
   public static ComponentLootTable create(OreComponent oreComp) {
     TreeMap<Integer, OreComponent> map = new TreeMap<>();
     AtomicInteger totalWeight = new AtomicInteger(0);
-    List<ResourceLocation> exceptions = CompoundOresConfig.COMMON.secondaryComponentsExceptions();
-    boolean whitelist = CompoundOresConfig.COMMON.secondaryComponentsWhitelist();
+    List<ResourceLocation> exceptions = CompoundOresConfig.COMMON.secondaryExceptions.get();
+    boolean whitelist = CompoundOresConfig.COMMON.secondaryExceptionsWhitelist.get();
     OreComponentRegistry.getInstance().getNonEmptyRegistry().values().stream()
       .filter(c ->
         !oreComp.equals(c) &&

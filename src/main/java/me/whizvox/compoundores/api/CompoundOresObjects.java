@@ -152,7 +152,7 @@ public class CompoundOresObjects {
 
   @SubscribeEvent
   public static void onRegisterFeatures(final RegistryEvent.Register<Feature<?>> event) {
-    if (CompoundOresConfig.COMMON.generateCompoundOres()) {
+    if (CompoundOresConfig.COMMON.generateCompoundOres.get()) {
       feature = new CompoundOreFeature();
       feature.setRegistryName(CompoundOres.MOD_ID, "compound_ore");
       event.getRegistry().register(feature);
@@ -162,7 +162,7 @@ public class CompoundOresObjects {
         .configured(NoFeatureConfig.INSTANCE)
         .range(128)
         .squared()
-        .count(CompoundOresConfig.COMMON.spawnChecks());
+        .count(CompoundOresConfig.COMMON.spawnChecks.get());
       Registry.register(WorldGenRegistries.CONFIGURED_FEATURE, "compoundores:compound_ore", configuredFeature);
       LOGGER.debug(REGISTRY, "Registered configured compound ore feature");
     }

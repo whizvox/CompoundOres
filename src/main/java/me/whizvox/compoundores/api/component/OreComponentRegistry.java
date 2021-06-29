@@ -95,8 +95,8 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         LOGGER.error(REGISTRY, "Could not load groups from directory: " + PathHelper.GROUPS_DIR, e);
       }
 
-      List<ResourceLocation> primaryExceptions = CompoundOresConfig.COMMON.primaryComponentsExceptions();
-      boolean primaryWhitelist = CompoundOresConfig.COMMON.primaryComponentsWhitelist();
+      List<ResourceLocation> primaryExceptions = CompoundOresConfig.COMMON.primaryExceptions.get();
+      boolean primaryWhitelist = CompoundOresConfig.COMMON.primaryExceptionsWhitelist.get();
       lootTables = new HashMap<>();
       nonEmptyRegistry.values().stream()
         // don't create a loot table for configured primary component exceptions
@@ -296,8 +296,8 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       .create()
     );
 
-    instance.registryExceptions = CompoundOresConfig.COMMON.componentsExceptions();
-    instance.whitelistExceptions = CompoundOresConfig.COMMON.componentsWhitelist();
+    instance.registryExceptions = CompoundOresConfig.COMMON.componentExceptions.get();
+    instance.whitelistExceptions = CompoundOresConfig.COMMON.componentExceptionsWhitelist.get();
     if (instance.whitelistExceptions) {
       if (instance.registryExceptions.isEmpty()) {
         LOGGER.warn(REGISTRY, "An empty whitelist was detected for ore component registration. No components will be registered!");
@@ -312,7 +312,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       }
     }
 
-    if (CompoundOresConfig.COMMON.registerComponentsFromDirectory()) {
+    if (CompoundOresConfig.COMMON.registerComponentsFromDirectory.get()) {
       final Path dir = PathHelper.COMPONENTS_DIR;
       try {
         int count = registerAllFromDirectory(dir);
@@ -325,7 +325,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         LOGGER.error(REGISTRY, "Could not read from components directory: " + dir + ". Will load backup hardcoded components instead", e);
       }
     }
-    if (CompoundOresConfig.COMMON.registerDefaultComponents()) {
+    if (CompoundOresConfig.COMMON.registerDefaultComponents.get()) {
       LOGGER.debug(REGISTRY, "Registering default ore components");
       int prevCount = instance.getCount();
       OreComponents.registerDefaults();
@@ -346,7 +346,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         LOGGER.debug(REGISTRY, "Registered new ore component from {}", p);
         count.incrementAndGet();
       } catch (JsonParseException | IOException e) {
-        if (CompoundOresConfig.COMMON.ignoreBadComponents()) {
+        if (CompoundOresConfig.COMMON.ignoreBadComponents.get()) {
           LOGGER.error(REGISTRY, "Could not parse ore component from " + p, e);
         } else {
           throw new RuntimeException("Set to hard crash in the event of a badly-defined or malformed component: " + p, e);
@@ -368,7 +368,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         }
         groups.put(FilenameUtils.getBaseName(p.getFileName().toString()), list);
       } catch (JsonParseException | IOException e) {
-        if (CompoundOresConfig.COMMON.ignoreBadComponents()) {
+        if (CompoundOresConfig.COMMON.ignoreBadComponents.get()) {
           LOGGER.error(REGISTRY, "Could not read group definition from " + p, e);
         } else {
           throw new RuntimeException("Failed to read group definition from " + p, e);

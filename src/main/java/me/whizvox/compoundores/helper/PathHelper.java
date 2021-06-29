@@ -12,6 +12,7 @@ public class PathHelper {
   }
 
   public static final Path
+      CONFIG_DIR            = getAndCreate(FMLPaths.CONFIGDIR.get().resolve(CompoundOres.MOD_ID)),
       MOD_ROOT_DIR          = getAndCreate(FMLPaths.GAMEDIR.get().resolve(CompoundOres.MOD_ID)),
       COMPONENTS_DIR        = getAndCreate(MOD_ROOT_DIR.resolve("components")),
       EXPORT_DIR            = getAndCreate(MOD_ROOT_DIR.resolve("export")),

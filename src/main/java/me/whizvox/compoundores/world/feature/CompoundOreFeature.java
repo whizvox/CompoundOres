@@ -32,7 +32,7 @@ public class CompoundOreFeature extends Feature<NoFeatureConfig> {
       discovered.add(rootPos);
       queue.add(rootPos);
       int replaceCount = 0;
-      final int maxReplaceCount = CompoundOresConfig.COMMON.maxReplaceCount();
+      final int maxReplaceCount = CompoundOresConfig.COMMON.maxReplace.get();
       while (!queue.isEmpty() && replaceCount < maxReplaceCount) {
         BlockPos pos = queue.remove();
         // (Issue #4) veins may extend to chunks that are not loaded yet. don't know how to deal with that, so for now,

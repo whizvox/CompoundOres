@@ -86,7 +86,7 @@ public class CompoundOresCommand {
           )
         )
       );
-    if (CompoundOresConfig.COMMON.registerDebugCommand()) {
+    if (CompoundOresConfig.COMMON.registerDebugCommand.get()) {
       LOGGER.info(SERVER, "Registering CompoundOres debug subcommands");
       builder
         .then(Commands.literal("itemtags")
