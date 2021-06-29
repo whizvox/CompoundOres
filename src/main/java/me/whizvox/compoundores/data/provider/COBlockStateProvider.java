@@ -22,7 +22,8 @@ public class COBlockStateProvider extends BlockStateProvider {
 
   // components whose base texture should be the vanilla texture
   private static final Set<String> USE_VANILLA = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-    "ancient_debris"
+    "ancient_debris",
+    "glowstone"
   )));
 
   @Override

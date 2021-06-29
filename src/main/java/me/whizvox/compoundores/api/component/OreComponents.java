@@ -7,6 +7,7 @@ import me.whizvox.compoundores.api.util.NamedSoundType;
 import net.minecraft.block.Blocks;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ToolType;
 
 import java.util.Arrays;
 
@@ -24,6 +25,7 @@ public class OreComponents {
       NETHER_GOLD,
       NETHER_QUARTZ,
       ANCIENT_DEBRIS,
+      GLOWSTONE,
       // Commonly-used ore tags
       COPPER,
       TIN,
@@ -42,14 +44,32 @@ public class OreComponents {
       SULFUR,
       FLUORITE,
       YELLORITE,
+      APATITE,
+      CINNABAR,
+      NITER,
+      // Applied Energistics 2
+      CERTUS_QUARTZ,
+      CHARGED_CERTUS_QUARTZ,
+      // Extreme Reactors 2
+      ANGLESITE,
+      BENITOITE,
+      // Ice and Fire
+      AMYTHEST,
+      // Powah
+      URANINITE_POOR,
+      URANINITE,
+      URANINITE_DENSE,
+      // Quark
+      BIOTITE,
       // RFToolsBase
       DIMENSIONALSHARD_OVERWORLD,
       DIMENSIONALSHARD_NETHER,
       DIMENSIONALSHARD_END,
-      // Powah
-      URANINITE_POOR,
-      URANINITE,
-      URANINITE_DENSE;
+      // Thermal
+      BITUMINOUS_SAND,
+      BITUMINOUS_RED_SAND,
+      // Tinkers' Construct
+      TINKERS_COBALT;
 
   private static boolean initialized = false;
 
@@ -58,6 +78,7 @@ public class OreComponents {
       return;
     }
 
+    // Vanilla
     COAL = register("coal", OreComponent.builder().target(Blocks.COAL_ORE).weight(12).build());
     IRON = register("iron", OreComponent.builder().target(Blocks.IRON_ORE).weight(8).harvestLevel(1).build());
     LAPIS = register("lapis", OreComponent.builder().target(Blocks.LAPIS_ORE).weight(3).harvestLevel(1).build());
@@ -68,6 +89,9 @@ public class OreComponents {
     NETHER_GOLD = register("nether_gold", OreComponent.builder().target(Blocks.NETHER_GOLD_ORE).materialColor(NamedMaterialColor.NETHER).sound(NamedSoundType.NETHER_GOLD_ORE).weight(8).build());
     NETHER_QUARTZ = register("nether_quartz", OreComponent.builder().target(Blocks.NETHER_QUARTZ_ORE).materialColor(NamedMaterialColor.NETHER).sound(NamedSoundType.NETHER_ORE).weight(10).build());
     ANCIENT_DEBRIS = register("ancient_debris", OreComponent.builder().target(Blocks.ANCIENT_DEBRIS).material(NamedMaterial.METAL).materialColor(NamedMaterialColor.COLOR_BLACK).sound(NamedSoundType.ANCIENT_DEBRIS).weight(1).hardness(30.0F).resistance(1200.0F).harvestLevel(3).build());
+    GLOWSTONE = register("glowstone", OreComponent.builder().target(Blocks.GLOWSTONE).material(NamedMaterial.GLASS).materialColor(NamedMaterialColor.SAND).sound(NamedSoundType.GLASS).hardness(0.3F).resistance(0.3F).tool(null).build());
+
+    // Common tags
     COPPER = registerFirstInOreTag("copper", OreComponent.builder().weight(9).harvestLevel(1));
     TIN = registerFirstInOreTag("tin", OreComponent.builder().weight(5).harvestLevel(1));
     ALUMINUM = registerFirstInOreTag("aluminum", OreComponent.builder().weight(5).harvestLevel(1));
@@ -78,21 +102,36 @@ public class OreComponents {
     SILVER = registerFirstInOreTag("silver", OreComponent.builder().weight(4).harvestLevel(2));
     LEAD = registerFirstInOreTag("lead", OreComponent.builder().weight(4).harvestLevel(2));
     BISMUTH = registerFirstInOreTag("bismuth", OreComponent.builder().weight(3).harvestLevel(2));
-    SAPPHIRE = registerFirstInOreTag("sapphire", OreComponent.builder().weight(2).harvestLevel(2));
-    RUBY = registerFirstInOreTag("ruby", OreComponent.builder().weight(2).harvestLevel(2));
+    SAPPHIRE = registerFirstInOreTag("sapphire", OreComponent.builder().weight(2).harvestLevel(3));
+    RUBY = registerFirstInOreTag("ruby", OreComponent.builder().weight(2).harvestLevel(3));
     IRIDIUM = registerFirstInOreTag("iridium", OreComponent.builder().weight(1).harvestLevel(3));
     PLATINUM = registerFirstInOreTag("platinum", OreComponent.builder().weight(1).harvestLevel(3));
     SULFUR = registerFirstInOreTag("sulfur", OreComponent.builder().weight(7).harvestLevel(2));
     FLUORITE = registerFirstInOreTag("fluorite", OreComponent.builder().weight(3).harvestLevel(2));
     YELLORITE = registerFirstInOreTag("yellorite", OreComponent.builder().weight(2).harvestLevel(2));
+    NITER = registerFirstInOreTag("niter", OreComponent.builder().weight(3).harvestLevel(1));
+    APATITE = registerFirstInOreTag("apatite", OreComponent.builder().weight(1).harvestLevel(1));
+    CINNABAR = registerFirstInOreTag("cinnabar", OreComponent.builder().weight(1).harvestLevel(1));
+
+    // Mod-specific
+    TINKERS_COBALT = registerFromBlockName("tinkers_cobalt", "tconstruct:cobalt", OreComponent.builder().sound(NamedSoundType.NETHER_ORE).weight(2).hardness(10.0F).resistance(10.0F).harvestLevel(3));
+    CERTUS_QUARTZ = registerFromBlockName("certus_quartz", "appliedenergistics:quartz_ore", OreComponent.builder().weight(5).hardness(3.0F).resistance(5.0F).harvestLevel(1));
+    CHARGED_CERTUS_QUARTZ = registerFromBlockName("charged_certus_quartz", "appliedenergistics2:charged_quartz_ore", OreComponent.builder().weight(2).hardness(3.0F).resistance(5.0F).harvestLevel(1));
     DIMENSIONALSHARD_OVERWORLD = registerFromBlockName("dimensionalshard_overworld", "rftoolsbase:dimensionalshard_overworld", OreComponent.builder().resistance(5.0F).weight(3).harvestLevel(1));
     DIMENSIONALSHARD_NETHER = registerFromBlockName("dimensionalshard_nether", "rftoolsbase:dimensionalshard_nether", OreComponent.builder().resistance(5.0F).weight(2).harvestLevel(1));
     DIMENSIONALSHARD_END = registerFromBlockName("dimensionalshard_end", "rftoolsbase:dimensionalshard_end", OreComponent.builder().resistance(5.0F).weight(2).harvestLevel(1));
     URANINITE_POOR = registerFromBlockName("uraninite_poor", "powah:uraninite_ore_poor", OreComponent.builder().weight(5).resistance(8.0F));
     URANINITE = registerFromBlockName("uraninite", "powah:uraninite_ore", OreComponent.builder().weight(3).hardness(3.2F).resistance(8.0F));
     URANINITE_DENSE = registerFromBlockName("uraninite_dense", "powah:uraninite_ore_dense", OreComponent.builder().weight(1).hardness(4.0F).resistance(8.0F));
+    ANGLESITE = registerFromBlockName("anglesite", "bigreactors:anglesite_ore", OreComponent.builder().weight(1).materialColor(NamedMaterialColor.COLOR_ORANGE));
+    BENITOITE = registerFromBlockName("benitoite", "bigreactors:benitoite_ore", OreComponent.builder().weight(1).materialColor(NamedMaterialColor.COLOR_LIGHT_BLUE));
+    AMYTHEST = registerFromBlockName("amythest", "iceandfire:amythest_ore", OreComponent.builder().weight(1).harvestLevel(2).hardness(4.0F).resistance(15.0F));
+    BIOTITE = registerFromBlockName("biotite", "quark:biotite_ore", OreComponent.builder().weight(2).materialColor(NamedMaterialColor.SAND).hardness(3.2F).resistance(15.0F));
+    BITUMINOUS_SAND = registerFromBlockName("bituminous_sand", "thermal:oil_sand", OreComponent.builder().weight(4).material(NamedMaterial.SAND).materialColor(NamedMaterialColor.SAND).tool(ToolType.SHOVEL));
+    BITUMINOUS_RED_SAND = registerFromBlockName("bituminous_red_sand", "thermal:oil_red_sand", OreComponent.builder().weight(3).material(NamedMaterial.SAND).materialColor(NamedMaterialColor.COLOR_ORANGE).tool(ToolType.SHOVEL));
 
     addGroup("dimensionalshard", DIMENSIONALSHARD_OVERWORLD, DIMENSIONALSHARD_NETHER, DIMENSIONALSHARD_END);
+    addGroup("bituminous_sand", BITUMINOUS_SAND, BITUMINOUS_RED_SAND);
 
     initialized = true;
   }

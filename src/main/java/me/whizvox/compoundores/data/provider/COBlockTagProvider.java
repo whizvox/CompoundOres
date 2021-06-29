@@ -7,7 +7,6 @@ import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -53,13 +52,24 @@ public class COBlockTagProvider extends BlockTagsProvider {
       "platinum",
       "sulfur",
       "fluorite",
+      "niter",
+      "apatite",
+      "cinnabar",
       "uraninite_poor",
       "uraninite",
-      "uraninite_dense"
+      "uraninite_dense",
+      "biotite"
     };
     final String[] otherForgeOres = {
       "nether_quartz",  "quartz",
       "yellorite",      "uranium",
+      "tinkers_cobalt", "cobalt"
+    };
+    // tagged as forge:ores, but no other ore-specific tag
+    final String[] forgeOres = {
+      "amythest",
+      "anglesite",
+      "benitoite"
     };
     final String[] otherTags = {
       "gold",         "minecraft:gold_ores",
@@ -69,9 +79,14 @@ public class COBlockTagProvider extends BlockTagsProvider {
     List<Pair<ResourceLocation, ResourceLocation>> bindings = new ArrayList<>();
     for (String s : flatForgeOres) {
       bindings.add(Pair.of(new ResourceLocation(CompoundOres.MOD_ID, s), new ResourceLocation("forge", "ores/" + s)));
+      bindings.add(Pair.of(new ResourceLocation(CompoundOres.MOD_ID, s), new ResourceLocation("forge", "ores")));
     }
     for (int i = 0; i < otherForgeOres.length; i += 2) {
       bindings.add(Pair.of(new ResourceLocation(CompoundOres.MOD_ID, otherForgeOres[i]), new ResourceLocation("forge", "ores/" + otherForgeOres[i + 1])));
+      bindings.add(Pair.of(new ResourceLocation(CompoundOres.MOD_ID, otherForgeOres[i]), new ResourceLocation("forge", "ores")));
+    }
+    for (String s : forgeOres) {
+      bindings.add(Pair.of(new ResourceLocation(CompoundOres.MOD_ID, s), new ResourceLocation("forge", "ores")));
     }
     for (int i = 0; i < otherTags.length; i += 2) {
       bindings.add(Pair.of(new ResourceLocation(CompoundOres.MOD_ID, otherTags[i]), new ResourceLocation(otherTags[i + 1])));
@@ -86,8 +101,6 @@ public class COBlockTagProvider extends BlockTagsProvider {
     Builder<Block> compOresTag = tag(CompoundOresObjects.COMPOUND_ORES_BLOCK_TAG);
     CompoundOresObjects.blocks.forEach((compKey, block) -> compOresTag.add(block));
 
-    // bind all in compoundores:compound_ore tag to forge:ores
-    tag(Tags.Blocks.ORES).addTag(CompoundOresObjects.COMPOUND_ORES_BLOCK_TAG);
     // forge:ores and forge:ores/{name}
     compOreBlockTags.forEach(entry -> tag(BlockTags.createOptional(entry.getRight())).add(CompoundOresObjects.blocks.get(entry.getLeft())));
   }
