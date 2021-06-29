@@ -102,7 +102,7 @@ public class NamedMaterialColor {
     Map<String, NamedMaterialColor> nameMap = new HashMap<>();
     Map<Integer, NamedMaterialColor> idMap = new HashMap<>();
     Arrays.stream(NamedMaterialColor.class.getDeclaredFields())
-      .filter(f -> f.getType().isAssignableFrom(NamedMaterialColor.class) && Modifier.isStatic(f.getModifiers()))
+      .filter(f -> f.getType().isAssignableFrom(NamedMaterialColor.class) && Modifier.isStatic(f.getModifiers()) && !f.getName().equals("DEFAULT"))
       .forEach(f -> {
         try {
           NamedMaterialColor nMatColor = (NamedMaterialColor) f.get(null);

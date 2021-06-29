@@ -73,7 +73,7 @@ public class NamedMaterial {
     this(material, name, true);
   }
 
-  public static final NamedMaterial DEFAULT;
+  public static final NamedMaterial DEFAULT = STONE;
   public static final Map<String, NamedMaterial> VANILLA_MATERIALS;
 
   private static final Map<String, NamedMaterial> externalCache = new HashMap<>();
@@ -81,7 +81,7 @@ public class NamedMaterial {
   static {
     Map<String, NamedMaterial> map = new HashMap<>();
     Arrays.stream(NamedMaterial.class.getDeclaredFields())
-      .filter(f -> f.getType().isAssignableFrom(NamedMaterial.class) && Modifier.isStatic(f.getModifiers()))
+      .filter(f -> f.getType().isAssignableFrom(NamedMaterial.class) && Modifier.isStatic(f.getModifiers()) && !f.getName().equals("DEFAULT"))
       .forEach(f -> {
         try {
           NamedMaterial value = (NamedMaterial) f.get(null);
@@ -90,9 +90,7 @@ public class NamedMaterial {
           LOGGER.warn("Could not retrieve NamedMaterial from " + f.getName(), e);
         }
       });
-    VANILLA_MATERIALS = Collections.unmodifiableMap(map);
-    DEFAULT = vanilla("STONE");
-  }
+    VANILLA_MATERIALS = Collections.unmodifiableMap(map); }
 
   public static NamedMaterial from(String name) {
     if (name.indexOf('.') >= 0) {

@@ -84,7 +84,7 @@ public class NamedSoundType {
   static {
     Map<String, NamedSoundType> map = new HashMap<>();
     Arrays.stream(NamedSoundType.class.getDeclaredFields())
-      .filter(f -> f.getType().isAssignableFrom(NamedSoundType.class) && Modifier.isStatic(f.getModifiers()))
+      .filter(f -> f.getType().isAssignableFrom(NamedSoundType.class) && Modifier.isStatic(f.getModifiers()) && !f.getName().equals("DEFAULT"))
       .forEach(f -> {
         try {
           NamedSoundType nSound = (NamedSoundType) f.get(null);
