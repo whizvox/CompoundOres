@@ -1,6 +1,7 @@
 package me.whizvox.compoundores.api.target;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +16,7 @@ public interface IBlockTarget {
   List<String> serialize();
 
   default Block getResolvedTarget() {
-    return getResolvedTargets().stream().findAny().orElse(null);
+    return getResolvedTargets().stream().findAny().orElse(Blocks.AIR);
   }
 
   IBlockTarget NONE = new IBlockTarget() {

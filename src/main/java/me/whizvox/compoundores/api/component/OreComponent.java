@@ -22,18 +22,20 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
   private final NamedMaterial material;
   private final NamedMaterialColor materialColor;
   private final ToolType harvestTool;
+  private final boolean toolRequired;
   private final NamedSoundType sound;
   private final float hardness;
   private final float resistance;
   private final int harvestLevel;
   private final int weight;
 
-  public OreComponent(IBlockTarget target, int overlayColor, NamedMaterial material, NamedMaterialColor materialColor, ToolType harvestTool, NamedSoundType sound, float hardness, float resistance, int harvestLevel, int weight) {
+  public OreComponent(IBlockTarget target, int overlayColor, NamedMaterial material, NamedMaterialColor materialColor, ToolType harvestTool, boolean toolRequired, NamedSoundType sound, float hardness, float resistance, int harvestLevel, int weight) {
     this.target = target;
     this.overlayColor = overlayColor;
     this.material = material;
     this.materialColor = materialColor;
     this.harvestTool = harvestTool;
+    this.toolRequired = toolRequired;
     this.sound = sound;
     this.hardness = hardness;
     this.resistance = resistance;
@@ -42,7 +44,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
   }
 
   public final boolean isEmpty() {
-    return this == EMPTY || target == IBlockTarget.NONE || getRegistryName() == null;
+    return this == EMPTY || getRegistryName() == null;
   }
 
   public IBlockTarget getTarget() {
@@ -65,6 +67,10 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
   @Nullable
   public ToolType getHarvestTool() {
     return harvestTool;
+  }
+
+  public boolean isToolRequired() {
+    return toolRequired;
   }
 
   public NamedSoundType getSound() {
@@ -122,6 +128,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     private NamedMaterial material;
     private NamedMaterialColor materialColor;
     private ToolType harvestTool;
+    private boolean toolRequired;
     private NamedSoundType sound;
     private float destroySpeed;
     private float blastResistance;
@@ -133,6 +140,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
       material = DefaultValues.MATERIAL;
       materialColor = DefaultValues.MATERIAL_COLOR;
       harvestTool = DefaultValues.HARVEST_TOOL;
+      toolRequired = DefaultValues.TOOL_REQUIRED;
       sound = DefaultValues.SOUND;
       destroySpeed = DefaultValues.HARDNESS;
       blastResistance = DefaultValues.RESISTANCE;
@@ -162,6 +170,11 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
       this.harvestTool = harvestTool;
       return this;
     }
+    public Builder tool(ToolType harvestTool, boolean required) {
+      this.harvestTool = harvestTool;
+      this.toolRequired = required;
+      return this;
+    }
     public Builder sound(NamedSoundType sound) {
       this.sound = sound;
       return this;
@@ -174,6 +187,14 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
       this.blastResistance = resistance;
       return this;
     }
+    public Builder strength(float hardness, float resistance) {
+      this.destroySpeed = hardness;
+      this.blastResistance = resistance;
+      return this;
+    }
+    public Builder strength(float hardnessAndResistance) {
+      return strength(hardnessAndResistance, hardnessAndResistance);
+    }
     public Builder harvestLevel(int harvestLevel) {
       this.harvestLevel = harvestLevel;
       return this;
@@ -183,7 +204,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
       return this;
     }
     public OreComponent build() {
-      return new OreComponent(target, overlayColor, material, materialColor, harvestTool, sound, destroySpeed, blastResistance, harvestLevel, weight);
+      return new OreComponent(target, overlayColor, material, materialColor, harvestTool, toolRequired, sound, destroySpeed, blastResistance, harvestLevel, weight);
     }
   }
 
@@ -192,6 +213,7 @@ public class OreComponent extends ForgeRegistryEntry<OreComponent> implements Co
     public static final NamedMaterial MATERIAL = NamedMaterial.DEFAULT;
     public static final NamedMaterialColor MATERIAL_COLOR = NamedMaterialColor.DEFAULT;
     public static final ToolType HARVEST_TOOL = ToolType.PICKAXE;
+    public static final boolean TOOL_REQUIRED = true;
     public static final NamedSoundType SOUND = NamedSoundType.DEFAULT;
     public static final float HARDNESS = 3.0F;
     public static final float RESISTANCE = 3.0F;

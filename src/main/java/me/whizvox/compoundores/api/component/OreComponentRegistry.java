@@ -33,9 +33,6 @@ import static me.whizvox.compoundores.helper.Markers.REGISTRY;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
-  private List<ResourceLocation> registryExceptions;
-  private boolean whitelistExceptions;
-
   private Map<ResourceLocation, OreComponent> nonEmptyRegistry;
   private List<OreComponent> sortedComponents;
   private Map<ResourceLocation, List<OreComponent>> blockLookupMap;
@@ -95,12 +92,10 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
         LOGGER.error(REGISTRY, "Could not load groups from directory: " + PathHelper.GROUPS_DIR, e);
       }
 
-      List<ResourceLocation> primaryExceptions = CompoundOresConfig.COMMON.primaryExceptions.get();
-      boolean primaryWhitelist = CompoundOresConfig.COMMON.primaryExceptionsWhitelist.get();
       lootTables = new HashMap<>();
       nonEmptyRegistry.values().stream()
         // don't create a loot table for configured primary component exceptions
-        .filter(c -> (primaryWhitelist && primaryExceptions.contains(c.getRegistryName())) || (!primaryWhitelist && !primaryExceptions.contains(c.getRegistryName())))
+        .filter(c -> CompoundOresConfig.COMMON.permitPrimaryOre(c.getRegistryName()))
         .forEach(oreComp -> lootTables.put(oreComp.getRegistryName(), ComponentLootTable.create(oreComp)));
       lootTables = Collections.unmodifiableMap(lootTables);
 
@@ -143,36 +138,15 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     }
   }
 
-  /**
-   * Will register an {@link OreComponent} with respect to the mod's configuration files. Both of the following
-   * conditions must evaluate to true for the component to be registered.
-   * <ol>
-   *   <li>Either the component's registry name is on the whitelist or not on the blacklist</li>
-   *   <li>The component's registry name does not match another registry entry</li>
-   * </ol>
-   * If either of the following conditions, however, evaluates to false, then the component is not registered, and
-   * {@link OreComponent#EMPTY} is returned instead.
-   * @param value The ore component to register
-   * @return The provided value if registration was successful, otherwise {@link OreComponent#EMPTY}
-   */
-  public OreComponent registerChecked(OreComponent value) {
-    if (whitelistExceptions) {
-      if (!registryExceptions.contains(value.getRegistryName())) {
-        LOGGER.debug(REGISTRY, "Skipped registry of {} since it isn't on the whitelist", value.getRegistryName());
-        return OreComponent.EMPTY;
-      }
+  @Override
+  public void register(OreComponent value) {
+    if (value.isEmpty()) {
+      LOGGER.warn(REGISTRY, "Attempted to register an empty ore: {}", value.getRegistryName());
+    } else if (!CompoundOresConfig.COMMON.permitOre(value.getRegistryName())) {
+      LOGGER.debug(REGISTRY, "Ore configured to not register: {}", value.getRegistryName());
     } else {
-      if (registryExceptions.contains(value.getRegistryName())) {
-        LOGGER.debug(REGISTRY, "Skipped registry of {} since it is on the blacklist", value.getRegistryName());
-        return OreComponent.EMPTY;
-      }
+      super.register(value);
     }
-    if (containsKey(value.getRegistryName())) {
-      LOGGER.debug(REGISTRY, "Attempted to register more than 1 component with the same registry name: {}", value.getRegistryName());
-      return OreComponent.EMPTY;
-    }
-    super.register(value);
-    return value;
   }
 
   /**
@@ -195,12 +169,6 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
   public Map<ResourceLocation, OreComponent> getNonEmptyRegistry() {
     resolveCaches();
     return nonEmptyRegistry;
-  }
-
-  @Override
-  public void register(OreComponent value) {
-    LOGGER.warn(REGISTRY, "Standard #register(OreComponent) method has been called. Should use #registerChecked(OreComponent) to respect the exceptions list");
-    super.register(value);
   }
 
   @Override
@@ -296,19 +264,18 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       .create()
     );
 
-    instance.registryExceptions = CompoundOresConfig.COMMON.componentExceptions.get();
-    instance.whitelistExceptions = CompoundOresConfig.COMMON.componentExceptionsWhitelist.get();
-    if (instance.whitelistExceptions) {
-      if (instance.registryExceptions.isEmpty()) {
+    List<ResourceLocation> exceptions = CompoundOresConfig.COMMON.componentExceptions.get();
+    if (CompoundOresConfig.COMMON.componentExceptionsWhitelist.get()) {
+      if (exceptions.isEmpty()) {
         LOGGER.warn(REGISTRY, "An empty whitelist was detected for ore component registration. No components will be registered!");
       } else {
-        LOGGER.info(REGISTRY, "A whitelist was detected for ore component registration: [{}]", instance.registryExceptions.stream().map(ResourceLocation::toString).collect(Collectors.joining(", ")));
+        LOGGER.info(REGISTRY, "A whitelist was detected for ore component registration: [{}]", exceptions.stream().map(ResourceLocation::toString).collect(Collectors.joining(", ")));
       }
     } else {
-      if (instance.registryExceptions.isEmpty()) {
+      if (exceptions.isEmpty()) {
         LOGGER.info(REGISTRY, "An empty blacklist was detected for ore component registration. All components will be registered");
       } else {
-        LOGGER.info(REGISTRY, "A blacklist was detected for ore component registration: [{}]", instance.registryExceptions.stream().map(ResourceLocation::toString).collect(Collectors.joining(", ")));
+        LOGGER.info(REGISTRY, "A blacklist was detected for ore component registration: [{}]", exceptions.stream().map(ResourceLocation::toString).collect(Collectors.joining(", ")));
       }
     }
 
@@ -342,7 +309,7 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
       try (Reader reader = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
         OreComponent oreComp = JsonHelper.GSON.fromJson(reader, OreComponent.class);
         oreComp.setRegistryName(CompoundOres.MOD_ID, baseName);
-        instance.registerChecked(oreComp);
+        instance.register(oreComp);
         LOGGER.debug(REGISTRY, "Registered new ore component from {}", p);
         count.incrementAndGet();
       } catch (JsonParseException | IOException e) {

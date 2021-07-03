@@ -26,15 +26,24 @@ repositories {
     name = "ModMaven"
     url = "https://modmaven.k-4u.nl"
   }
+  maven {
+    name 'DVS1 Maven FS'
+    url 'http://dvs1.progwml6.com/files/maven'
+  }
+  maven {
+    name 'CurseMaven'
+    url "https://www.cursemaven.com"
+    content {
+      includeGroup "curse.maven"
+    }
+  }
 }
 
-version = 'dev-20200629.3'
+version = 'dev-20200703'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
-
-//println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 minecraft {
   // official Mojang-provided mappings
@@ -85,10 +94,18 @@ dependencies {
 
   // if you want to test with other mods, put them as runtimeOnly dependencies here
   // examples:
-  /*runtimeOnly fg.deobf('mezz.jei:jei-1.16.5:7.6.1.75')
-  runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448')
-  runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:generators')
-  runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:tools')*/
+  //runtimeOnly fg.deobf('mezz.jei:jei-1.16.5:7.6.1.75')
+  //runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448')
+  //runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:generators')
+  //runtimeOnly fg.deobf("slimeknights.mantle:Mantle:1.16.5-<mantle_build>")
+  //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-<tic_build>")
+
+  // most mods are not explicitly uploaded to a Maven repo, but pretty much all of them are uploaded to CurseForge
+  // format: `curse.maven:<mod name>-<mod id>:<file id>` (mod name doesn't do anything, just for human identification)
+  //runtimeOnly fg.deobf('curse.maven:rftoolsbase-326041:3206945')
+  //runtimeOnly fg.deobf('curse.maven:mcjtylib-233105:3236516')
+  //runtimeOnly fg.deobf('curse.maven:cofhworld-69162:3249453')
+  //runtimeOnly fg.deobf('curse.maven:thermalfounation-222880:3248150')
 }
 
 jar {

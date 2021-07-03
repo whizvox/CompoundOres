@@ -3,10 +3,8 @@ package me.whizvox.compoundores.api.util;
 import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.config.CompoundOresConfig;
-import net.minecraft.util.ResourceLocation;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,12 +38,10 @@ public class ComponentLootTable {
   public static ComponentLootTable create(OreComponent oreComp) {
     TreeMap<Integer, OreComponent> map = new TreeMap<>();
     AtomicInteger totalWeight = new AtomicInteger(0);
-    List<ResourceLocation> exceptions = CompoundOresConfig.COMMON.secondaryExceptions.get();
-    boolean whitelist = CompoundOresConfig.COMMON.secondaryExceptionsWhitelist.get();
     OreComponentRegistry.getInstance().getNonEmptyRegistry().values().stream()
       .filter(c ->
         !oreComp.equals(c) &&
-          ((whitelist && exceptions.contains(c.getRegistryName())) || (!whitelist && !exceptions.contains(c.getRegistryName()))) &&
+          CompoundOresConfig.COMMON.permitSecondaryOre(c.getRegistryName()) &&
           !c.getTarget().getResolvedTargets().isEmpty() &&
           !OreComponentRegistry.getInstance().getGroup(oreComp).contains(c))
       .forEach(c -> map.put(totalWeight.getAndAdd(c.getWeight()), c));

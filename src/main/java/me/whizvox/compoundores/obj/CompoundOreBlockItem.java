@@ -1,17 +1,23 @@
 package me.whizvox.compoundores.obj;
 
 import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.helper.NBTHelper;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.registries.ForgeRegistryEntry;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class CompoundOreBlockItem extends BlockItem {
@@ -55,20 +61,16 @@ public class CompoundOreBlockItem extends BlockItem {
     }
   }
 
-  // unfortunately, non-vanilla tags not bound by the time this method is called, so we can't resolve targets that rely
-  // on tags, so just register base ores for now
-  /*@Override
+  @Override
   public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> items) {
     if (allowdedIn(group)) {
-      ComponentLootTable lootTable = OreComponentRegistry.getInstance().getLootTable(((CompoundOreBlock) getBlock()).getPrimaryComponent());
-      OreComponentRegistry.getInstance().getSortedValues().stream()
-        .filter(lootTable::contains)
-        .forEach(secondary -> {
-          ItemStack stack = new ItemStack(this);
-          NBTHelper.writeOreComponent(stack, TAG_SECONDARY, secondary);
-          items.add(stack);
-        });
+      ArrayList<OreComponent> ores = new ArrayList<>(OreComponentRegistry.getInstance().getValues());
+      ores.stream().sorted(Comparator.comparing(ForgeRegistryEntry::getRegistryName)).forEach(ore -> {
+        ItemStack stack = new ItemStack(this);
+        NBTHelper.writeOreComponent(stack, TAG_SECONDARY, ore);
+        items.add(stack);
+      });
     }
-  }*/
+  }
 
 }

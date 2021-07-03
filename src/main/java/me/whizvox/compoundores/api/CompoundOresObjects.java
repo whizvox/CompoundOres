@@ -3,6 +3,7 @@ package me.whizvox.compoundores.api;
 import me.whizvox.compoundores.CompoundOres;
 import me.whizvox.compoundores.api.component.OreComponent;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
+import me.whizvox.compoundores.api.component.OreComponents;
 import me.whizvox.compoundores.config.CompoundOresConfig;
 import me.whizvox.compoundores.helper.NBTHelper;
 import me.whizvox.compoundores.obj.CompoundOreBlock;
@@ -32,6 +33,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -43,8 +45,8 @@ import static me.whizvox.compoundores.helper.Markers.REGISTRY;
 public class CompoundOresObjects {
 
   private static final ResourceLocation
-    PREFERRED_ITEMGROUP_ICON_PRIMARY = new ResourceLocation("compoundores:coal"),
-    PREFERRED_ITEMGROUP_ICON_SECONDARY = new ResourceLocation("compoundores:diamond");
+      PREFERRED_ITEMGROUP_ICON_PRIMARY = OreComponents.COAL.getRegistryName(),
+      PREFERRED_ITEMGROUP_ICON_SECONDARY = OreComponents.DIAMOND.getRegistryName();
 
   public static final ITag.INamedTag<Block> COMPOUND_ORES_BLOCK_TAG = BlockTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
   public static final ITag.INamedTag<Item> COMPOUND_ORES_ITEM_TAG = ItemTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
@@ -82,26 +84,26 @@ public class CompoundOresObjects {
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     Map<ResourceLocation, CompoundOreBlock> tempCompOres = new HashMap<>();
     OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
-      if (!oreComp.isEmpty()) {
-        AbstractBlock.Properties props;
-        if (oreComp.getMaterialColor() == null) {
-          props = AbstractBlock.Properties.of(oreComp.getMaterial().material);
-        } else {
-          props = AbstractBlock.Properties.of(oreComp.getMaterial().material, oreComp.getMaterialColor().color);
-        }
-        props
-          .strength(oreComp.getHardness(), oreComp.getResistance())
-          .harvestLevel(oreComp.getHarvestLevel())
-          .sound(oreComp.getSound().sound);
-        if (oreComp.getHarvestTool() != null) {
-          props.requiresCorrectToolForDrops()
-            .harvestTool(oreComp.getHarvestTool());
-        }
-        CompoundOreBlock block = new CompoundOreBlock(props, oreComp);
-        registerBlock("compound_ore_" + oreComp.getRegistryName().getPath(), block);
-        LOGGER.debug(REGISTRY, "Registered compound ore block {} for component {}", block.getRegistryName(), oreComp.getRegistryName());
-        tempCompOres.put(oreComp.getRegistryName(), block);
+      AbstractBlock.Properties props;
+      if (oreComp.getMaterialColor() == null) {
+        props = AbstractBlock.Properties.of(oreComp.getMaterial().material);
+      } else {
+        props = AbstractBlock.Properties.of(oreComp.getMaterial().material, oreComp.getMaterialColor().color);
       }
+      props
+        .strength(oreComp.getHardness(), oreComp.getResistance())
+        .harvestLevel(oreComp.getHarvestLevel())
+        .sound(oreComp.getSound().sound);
+      if (oreComp.getHarvestTool() != null) {
+        props.harvestTool(oreComp.getHarvestTool());
+        if (oreComp.isToolRequired()) {
+          props.requiresCorrectToolForDrops();
+        }
+      }
+      CompoundOreBlock block = new CompoundOreBlock(props, oreComp);
+      registerBlock("compound_ore_" + oreComp.getRegistryName().getPath(), block);
+      LOGGER.debug(REGISTRY, "Registered compound ore block {} for component {}", block.getRegistryName(), oreComp.getRegistryName());
+      tempCompOres.put(oreComp.getRegistryName(), block);
     });
     blocks = Collections.unmodifiableMap(tempCompOres);
     LOGGER.info(REGISTRY, "Registered {} total compound ore blocks", blocks.size());
@@ -111,7 +113,7 @@ public class CompoundOresObjects {
   public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
     Map<ResourceLocation, CompoundOreBlockItem> tempBlockItems = new HashMap<>();
     // register items alphabetically so it looks neat in the creative menu and JEI
-    OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
+    OreComponentRegistry.getInstance().getValues().stream().sorted(Comparator.comparing(OreComponent::getRegistryName)).forEach(oreComp -> {
       final ResourceLocation key = oreComp.getRegistryName();
       CompoundOreBlockItem item = new CompoundOreBlockItem(blocks.get(key), new Item.Properties().tab(CompoundOres.ITEM_GROUP_ORES));
       registerItem("compound_ore_" + oreComp.getRegistryName().getPath(), item);

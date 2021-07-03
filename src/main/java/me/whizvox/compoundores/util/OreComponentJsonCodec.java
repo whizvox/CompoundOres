@@ -124,7 +124,17 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
         if (harvestTool == null) {
           err("Invalid harvest tool type: " + toolElem);
         } else {
-          builder.tool(harvestTool);
+          boolean toolRequired = OreComponent.DefaultValues.TOOL_REQUIRED;
+          // OPTIONAL
+          if (obj.has("toolRequired")) {
+            JsonElement toolReqElem = obj.get("toolRequired");
+            if (toolReqElem.isJsonPrimitive() && toolReqElem.getAsJsonPrimitive().isBoolean()) {
+              toolRequired = toolReqElem.getAsBoolean();
+            } else {
+              err("toolRequired property must be a boolean");
+            }
+          }
+          builder.tool(harvestTool, toolRequired);
         }
       } else if (toolElem.isJsonNull()) {
         builder.tool(null);
@@ -214,6 +224,9 @@ public class OreComponentJsonCodec implements JsonDeserializer<OreComponent>, Js
       } else {
         obj.addProperty("harvestTool", oreComp.getHarvestTool().getName());
       }
+    }
+    if (oreComp.isToolRequired() != OreComponent.DefaultValues.TOOL_REQUIRED) {
+      obj.addProperty("toolRequired", oreComp.isToolRequired());
     }
     return obj;
   }

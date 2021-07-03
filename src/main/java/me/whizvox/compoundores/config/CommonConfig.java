@@ -65,4 +65,16 @@ public class CommonConfig {
     this.config = config;
   }
 
+  public boolean permitOre(ResourceLocation oreName) {
+    return componentExceptionsWhitelist.get() == componentExceptions.get().contains(oreName);
+  }
+
+  public boolean permitPrimaryOre(ResourceLocation oreName) {
+    return primaryExceptionsWhitelist.get() == primaryExceptions.get().contains(oreName);
+  }
+
+  public boolean permitSecondaryOre(ResourceLocation oreName) {
+    return secondaryExceptionsWhitelist.get() == secondaryExceptions.get().contains(oreName);
+  }
+
 }
