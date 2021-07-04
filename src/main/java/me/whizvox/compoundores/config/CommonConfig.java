@@ -25,6 +25,7 @@ public class CommonConfig {
   public final ConfigValue<List<ResourceLocation>> secondaryExceptions;
   public final ConfigValue<Boolean> secondaryExceptionsWhitelist;
   public final ConfigValue<Boolean> registerDebugCommand;
+  public final ConfigValue<Boolean> creativeTabAllCompounds;
 
   public final FileConfig config;
 
@@ -43,6 +44,8 @@ public class CommonConfig {
       "Whether to treat componentExceptions as a whitelist or not", false);
     registerDebugCommand = new ConfigValue<>(config, "registration.registerDebugCommand",
       "Whether to register the debug-only subcommands of /compores", false);
+    creativeTabAllCompounds = new ConfigValue<>(config, "registration.creativeTabAllCompounds",
+      "Whether to show all possible compounds in the vanilla creative tab", true);
 
     config.setComment("worldgen", "World generation settings");
     generateCompoundOres = new ConfigValue<>(config, "worldgen.generateCompoundOres",

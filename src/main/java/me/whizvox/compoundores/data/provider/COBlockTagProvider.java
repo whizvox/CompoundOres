@@ -35,7 +35,6 @@ public class COBlockTagProvider extends BlockTagsProvider {
       "redstone",
       "diamond",
       "emerald",
-      "ancient_debris",
       "copper",
       "tin",
       "aluminum",
@@ -62,6 +61,7 @@ public class COBlockTagProvider extends BlockTagsProvider {
     };
     final String[] otherForgeOres = {
       "nether_quartz",  "quartz",
+      "ancient_debris", "netherite_scrap",
       "yellorite",      "uranium",
       "tinkers_cobalt", "cobalt"
     };

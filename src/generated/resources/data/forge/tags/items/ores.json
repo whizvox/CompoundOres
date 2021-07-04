@@ -1,14 +1,12 @@
 {
   "replace": false,
   "values": [
-    "#compoundores:compound_ore",
     "compoundores:compound_ore_coal",
     "compoundores:compound_ore_iron",
     "compoundores:compound_ore_lapis",
     "compoundores:compound_ore_redstone",
     "compoundores:compound_ore_diamond",
     "compoundores:compound_ore_emerald",
-    "compoundores:compound_ore_ancient_debris",
     "compoundores:compound_ore_copper",
     "compoundores:compound_ore_tin",
     "compoundores:compound_ore_aluminum",
@@ -33,6 +31,7 @@
     "compoundores:compound_ore_uraninite_dense",
     "compoundores:compound_ore_biotite",
     "compoundores:compound_ore_nether_quartz",
+    "compoundores:compound_ore_ancient_debris",
     "compoundores:compound_ore_yellorite",
     "compoundores:compound_ore_tinkers_cobalt",
     "compoundores:compound_ore_amythest",

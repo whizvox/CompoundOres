@@ -44,10 +44,6 @@ import static me.whizvox.compoundores.helper.Markers.REGISTRY;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CompoundOresObjects {
 
-  private static final ResourceLocation
-      PREFERRED_ITEMGROUP_ICON_PRIMARY = OreComponents.COAL.getRegistryName(),
-      PREFERRED_ITEMGROUP_ICON_SECONDARY = OreComponents.DIAMOND.getRegistryName();
-
   public static final ITag.INamedTag<Block> COMPOUND_ORES_BLOCK_TAG = BlockTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
   public static final ITag.INamedTag<Item> COMPOUND_ORES_ITEM_TAG = ItemTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
 
@@ -123,14 +119,16 @@ public class CompoundOresObjects {
     blockItems = Collections.unmodifiableMap(tempBlockItems);
     LOGGER.debug(REGISTRY, "Registered {} total compound ore block items", blockItems.size());
 
+    final ResourceLocation preferredPrimary = OreComponents.COAL.getRegistryName();
+    final ResourceLocation preferredSecondary = OreComponents.DIAMOND.getRegistryName();
     if (oresItemGroupIcon.isEmpty() && !blockItems.isEmpty() && OreComponentRegistry.getInstance().getValues().size() > 1) {
-      if (blockItems.containsKey(PREFERRED_ITEMGROUP_ICON_PRIMARY) && OreComponentRegistry.getInstance().containsKey(PREFERRED_ITEMGROUP_ICON_SECONDARY)) {
-        CompoundOreBlockItem blockItem = blockItems.get(PREFERRED_ITEMGROUP_ICON_PRIMARY);
+      if (blockItems.containsKey(preferredPrimary) && OreComponentRegistry.getInstance().containsKey(preferredSecondary)) {
+        CompoundOreBlockItem blockItem = blockItems.get(preferredPrimary);
         ItemStack stack = new ItemStack(blockItem);
-        OreComponent secondary = OreComponentRegistry.getInstance().getValue(PREFERRED_ITEMGROUP_ICON_SECONDARY);
+        OreComponent secondary = OreComponentRegistry.getInstance().getValue(preferredSecondary);
         NBTHelper.writeOreComponent(stack, CompoundOreBlockItem.TAG_SECONDARY, secondary);
         oresItemGroupIcon = stack;
-        LOGGER.debug(REGISTRY, "Set the preferred compound ore creative tab icon : {} / {}", PREFERRED_ITEMGROUP_ICON_PRIMARY, PREFERRED_ITEMGROUP_ICON_SECONDARY);
+        LOGGER.debug(REGISTRY, "Set the preferred compound ore creative tab icon : {} / {}", preferredPrimary, preferredSecondary);
       } else {
         CompoundOreBlockItem blockItem = blockItems.values().stream().findAny().get();
         OreComponent randSecondary = OreComponentRegistry.getInstance().getValues().stream().filter(c -> c != ((CompoundOreBlock) blockItem.getBlock()).getPrimaryComponent()).findAny().get();

@@ -136,11 +136,10 @@ efee31198f0a2d83a8666b889ee2f657dddf6ef1 assets/compoundores/models/item/compoun
 207cde59bdaa09d846b70eb484db760cbc7dfd3a assets/compoundores/models/item/compound_ore_uranium.json
 5f126372817e1d0b5387fdb3d35369f283333b35 assets/compoundores/models/item/compound_ore_yellorite.json
 ccfb42f26980e1f7b18b0e6476761b868d0266c0 assets/compoundores/models/item/compound_ore_zinc.json
-e4aa1c71c7795006f14a35513850c33b6508789d data/compoundores/tags/blocks/compound_ore.json
-e4aa1c71c7795006f14a35513850c33b6508789d data/compoundores/tags/items/compound_ore.json
-4472448b2fba7cde0bd3e2ab9ef71aa075f5045e data/forge/tags/blocks/ores.json
+459020361ce1b184e7b990c33c394710c203947f data/compoundores/tags/blocks/compound_ore.json
+217b72d01de5d85652f695e515ad40ad7dde5e2c data/compoundores/tags/items/compound_ore.json
+c13d3a1b6298e42047fc598689a05b56e6a9f4bf data/forge/tags/blocks/ores.json
 5eb0ddbd7ff4973d9539610d6d25010303a82e3e data/forge/tags/blocks/ores/aluminum.json
-f0bb420f31a62b045c5f091761f47617e9bc7482 data/forge/tags/blocks/ores/ancient_debris.json
 48b081aba9a51f34e12cc802d42cb5f9f4022353 data/forge/tags/blocks/ores/apatite.json
 a7844b88f27925fb43587c5de51b5396c27656d2 data/forge/tags/blocks/ores/biotite.json
 2cf162c275b76d1430d0a76ead0cadf2487d7469 data/forge/tags/blocks/ores/bismuth.json
@@ -155,6 +154,7 @@ d29fe8cc8756d36ed94eea2363c386d122a8042c data/forge/tags/blocks/ores/diamond.jso
 b3029f5e444d1457e142bf792ab58596a4474942 data/forge/tags/blocks/ores/iron.json
 2a6471a6a03d9b145f585911517fbbc611d0867e data/forge/tags/blocks/ores/lapis.json
 1bf69df84e5355ce2e58fefc0a270b8a1081c25e data/forge/tags/blocks/ores/lead.json
+f0bb420f31a62b045c5f091761f47617e9bc7482 data/forge/tags/blocks/ores/netherite_scrap.json
 6d41f87da6d118600a4936f0b4ec7491146238b5 data/forge/tags/blocks/ores/nickel.json
 b5a290a67d235db8f33246835196a457f331c3f3 data/forge/tags/blocks/ores/niter.json
 b4e30609cee0c15531ad9b19f08a9b184a4ec147 data/forge/tags/blocks/ores/osmium.json
@@ -171,9 +171,8 @@ f600e0d291d70dd68614397a1b5a199262d419a9 data/forge/tags/blocks/ores/sulfur.json
 e4c9780bd782052d3448a4e2fca4a8e2ad0b37ad data/forge/tags/blocks/ores/uraninite_poor.json
 bbe6ffb92edb9d27535a2e086b6d1628e4bb8d32 data/forge/tags/blocks/ores/uranium.json
 0032c8b2e9ae49841d91dc14c0b4e337404dac84 data/forge/tags/blocks/ores/zinc.json
-4d3b272d8b095878f63ec0e17bdf58667ae2cfa9 data/forge/tags/items/ores.json
+c13d3a1b6298e42047fc598689a05b56e6a9f4bf data/forge/tags/items/ores.json
 5eb0ddbd7ff4973d9539610d6d25010303a82e3e data/forge/tags/items/ores/aluminum.json
-f0bb420f31a62b045c5f091761f47617e9bc7482 data/forge/tags/items/ores/ancient_debris.json
 48b081aba9a51f34e12cc802d42cb5f9f4022353 data/forge/tags/items/ores/apatite.json
 a7844b88f27925fb43587c5de51b5396c27656d2 data/forge/tags/items/ores/biotite.json
 2cf162c275b76d1430d0a76ead0cadf2487d7469 data/forge/tags/items/ores/bismuth.json
@@ -188,6 +187,7 @@ d29fe8cc8756d36ed94eea2363c386d122a8042c data/forge/tags/items/ores/diamond.json
 b3029f5e444d1457e142bf792ab58596a4474942 data/forge/tags/items/ores/iron.json
 2a6471a6a03d9b145f585911517fbbc611d0867e data/forge/tags/items/ores/lapis.json
 1bf69df84e5355ce2e58fefc0a270b8a1081c25e data/forge/tags/items/ores/lead.json
+f0bb420f31a62b045c5f091761f47617e9bc7482 data/forge/tags/items/ores/netherite_scrap.json
 6d41f87da6d118600a4936f0b4ec7491146238b5 data/forge/tags/items/ores/nickel.json
 b5a290a67d235db8f33246835196a457f331c3f3 data/forge/tags/items/ores/niter.json
 b4e30609cee0c15531ad9b19f08a9b184a4ec147 data/forge/tags/items/ores/osmium.json

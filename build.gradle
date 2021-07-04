@@ -39,7 +39,7 @@ repositories {
   }
 }
 
-version = 'dev-20200703'
+version = 'dev-20200703.1'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 
@@ -97,8 +97,8 @@ dependencies {
   //runtimeOnly fg.deobf('mezz.jei:jei-1.16.5:7.6.1.75')
   //runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448')
   //runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:generators')
-  //runtimeOnly fg.deobf("slimeknights.mantle:Mantle:1.16.5-<mantle_build>")
-  //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-<tic_build>")
+  //runtimeOnly fg.deobf("slimeknights.mantle:Mantle:1.16.5-1.6.110")
+  //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-3.0.4.215"
 
   // most mods are not explicitly uploaded to a Maven repo, but pretty much all of them are uploaded to CurseForge
   // format: `curse.maven:<mod name>-<mod id>:<file id>` (mod name doesn't do anything, just for human identification)
