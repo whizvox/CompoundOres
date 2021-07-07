@@ -27,7 +27,6 @@ import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -41,7 +40,6 @@ import java.util.function.Supplier;
 import static me.whizvox.compoundores.CompoundOres.LOGGER;
 import static me.whizvox.compoundores.helper.Markers.REGISTRY;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CompoundOresObjects {
 
   public static final ITag.INamedTag<Block> COMPOUND_ORES_BLOCK_TAG = BlockTags.createOptional(new ResourceLocation(CompoundOres.MOD_ID, "compound_ore"));
@@ -77,6 +75,7 @@ public class CompoundOresObjects {
   }
 
   @SubscribeEvent
+  @SuppressWarnings("unused")
   public static void onRegisterBlocks(final RegistryEvent.Register<Block> event) {
     Map<ResourceLocation, CompoundOreBlock> tempCompOres = new HashMap<>();
     OreComponentRegistry.getInstance().getValues().forEach(oreComp -> {
@@ -106,6 +105,7 @@ public class CompoundOresObjects {
   }
 
   @SubscribeEvent
+  @SuppressWarnings("unused")
   public static void onRegisterItems(final RegistryEvent.Register<Item> event) {
     Map<ResourceLocation, CompoundOreBlockItem> tempBlockItems = new HashMap<>();
     // register items alphabetically so it looks neat in the creative menu and JEI
@@ -151,12 +151,14 @@ public class CompoundOresObjects {
   }
 
   @SubscribeEvent
+  @SuppressWarnings("unused")
   public static void onRegisterTileTypes(final RegistryEvent.Register<TileEntityType<?>> event) {
     tileEntityType = registerTileType("compound_ore", CompoundOreTile::new, blocks.values().toArray(new Block[0]));
     LOGGER.debug(REGISTRY, "Registered base compound ore tile entity type");
   }
 
   @SubscribeEvent
+  @SuppressWarnings("unused")
   public static void onRegisterFeatures(final RegistryEvent.Register<Feature<?>> event) {
     if (CompoundOresConfig.COMMON.generateCompoundOres.get()) {
       feature = new CompoundOreFeature();

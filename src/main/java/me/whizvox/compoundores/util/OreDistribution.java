@@ -1,5 +1,7 @@
 package me.whizvox.compoundores.util;
 
+import me.whizvox.compoundores.api.component.OreComponent;
+import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -96,6 +98,7 @@ public class OreDistribution {
     List<ChunkPos> scanned = new ArrayList<>();
     List<ChunkPos> skipped = new ArrayList<>();
     int totalScanned = 0;
+    Random rand = new Random();
 
     for (int cxoff = -chunkRadius; cxoff <= chunkRadius; cxoff++) {
       for (int zxoff = -chunkRadius; zxoff <= chunkRadius; zxoff++) {
@@ -110,7 +113,7 @@ public class OreDistribution {
                 BlockState state = world.getBlockState(bPos);
                 if (!state.is(Blocks.AIR)) {
                   totalScanned++;
-                  if (Tags.Blocks.ORES.contains(state.getBlock())) {
+                  if (Tags.Blocks.ORES.contains(state.getBlock()) || OreComponentRegistry.getInstance().getComponentFromBlock(state.getBlock(), rand) != OreComponent.EMPTY) {
                     matching.computeIfAbsent(state.getBlock().getRegistryName(), n -> new ArrayList<>()).add(bPos);
                   }
                 }

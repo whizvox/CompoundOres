@@ -30,12 +30,15 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.Tags;
 import org.apache.commons.lang3.tuple.Pair;
@@ -110,6 +113,9 @@ public class CompoundOresCommand {
         )
         .then(Commands.literal("oredist")
           .requires(src -> shouldExecute(src, 2))
+          .then(Commands.literal("overall")
+            .executes(CompoundOresCommand::createOverallOreDistribution)
+          )
           .then(Commands.literal("create")
             .executes(ctx -> createOreDistribution(ctx, 4))
             .then(Commands.argument("radius", IntegerArgumentType.integer(1, OreDistribution.MAX_CHUNK_RADIUS))
@@ -368,6 +374,53 @@ public class CompoundOresCommand {
           .append(new StringTextComponent(Integer.toString(pair.getRight())).withStyle(TextFormatting.AQUA)), false
       );
     });
+  }
+
+  private static Map<UUID, List<ServerWorld>> worlds = new HashMap<>();
+
+  private static int createOverallOreDistribution(CommandContext<CommandSource> ctx) {
+    ServerPlayerEntity player = (ServerPlayerEntity) ctx.getSource().getEntity();
+    World world = player.getCommandSenderWorld();
+    Map<ResourceLocation, AtomicInteger> dist = new HashMap<>();
+    AtomicInteger totalChunks = new AtomicInteger(0);
+    AtomicInteger totalOres = new AtomicInteger(0);
+    Random rand = new Random();
+    for (int i = 0; i < 64; i++) {
+      int xPos = rand.nextInt(200000) - 100000;
+      int zPos = rand.nextInt(200000) - 100000;
+      player.teleportToWithTicket(xPos, 128, zPos);
+      player.displayClientMessage(new StringTextComponent(String.format("Teleported to (%d, %d) [%d/64]", player.blockPosition().getX(), player.blockPosition().getZ(), i)), false);
+      for (int xcoff = -8; xcoff <= 8; xcoff++) {
+        for (int zcoff = -8; zcoff <= 8; zcoff++) {
+          ChunkPos cPos = new ChunkPos(player.xChunk + xcoff, player.zChunk + zcoff);
+          IChunk chunk = world.getChunk(cPos.x, cPos.z, ChunkStatus.FULL, false);
+          if (chunk != null) {
+            //player.displayClientMessage(new StringTextComponent(String.format("Scanning chunk: (%d, %d)", cPos.x, cPos.z)), false);
+            totalChunks.getAndIncrement();
+            for (int x = cPos.getMinBlockX(); x <= cPos.getMaxBlockX(); x++) {
+              for (int z = cPos.getMinBlockZ(); z <= cPos.getMaxBlockZ(); z++) {
+                for (int y = 0; y <= world.getMaxBuildHeight(); y++) {
+                  Block block = chunk.getBlockState(new BlockPos(x, y, z)).getBlock();
+                  if (block != Blocks.AIR && !OreComponentRegistry.getInstance().getComponentFromBlock(block, rand).isEmpty()) {
+                    dist.computeIfAbsent(block.getRegistryName(), name -> new AtomicInteger(0)).incrementAndGet();
+                    totalOres.incrementAndGet();
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    player.displayClientMessage(new StringTextComponent("Total chunks: " + totalChunks.get()), false);
+    player.displayClientMessage(new StringTextComponent("Total blocks: " + totalOres.get()), false);
+    dist.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey)).forEach(entry -> {
+      ResourceLocation blockName = entry.getKey();
+      AtomicInteger count = entry.getValue();
+      player.displayClientMessage(new StringTextComponent(String.format("- %s: %d (%.02f%%) total | %.02f/chunk", blockName,
+          count.get(), (float) count.get() / totalOres.get() * 100, (float) count.get() / totalChunks.get())), false);
+    });
+    return 1;
   }
 
 }

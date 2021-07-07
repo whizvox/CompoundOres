@@ -37,9 +37,12 @@ repositories {
       includeGroup "curse.maven"
     }
   }
+  maven {
+    url 'https://maven.blamejared.com'
+  }
 }
 
-version = 'dev-20200703.1'
+version = 'dev-20200707'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 
@@ -58,6 +61,8 @@ minecraft {
           source sourceSets.main
         }
       }
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     server {
@@ -69,6 +74,8 @@ minecraft {
           source sourceSets.main
         }
       }
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
 
     data {
@@ -81,6 +88,8 @@ minecraft {
           source sourceSets.main
         }
       }
+      property 'mixin.env.remapRefMap', 'true'
+      property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
     }
   }
 }
@@ -98,7 +107,9 @@ dependencies {
   //runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448')
   //runtimeOnly fg.deobf('mekanism:Mekanism:1.16.5-10.0.21.448:generators')
   //runtimeOnly fg.deobf("slimeknights.mantle:Mantle:1.16.5-1.6.110")
-  //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-3.0.4.215"
+  //runtimeOnly fg.deobf("slimeknights.tconstruct:TConstruct:1.16.5-3.0.4.215")
+  //runtimeOnly fg.deobf('vazkii.quark:Quark:r2.4-315.1869')
+  //runtimeOnly fg.deobf('vazkii.autoreglib:AutoRegLib:1.6-50.92')
 
   // most mods are not explicitly uploaded to a Maven repo, but pretty much all of them are uploaded to CurseForge
   // format: `curse.maven:<mod name>-<mod id>:<file id>` (mod name doesn't do anything, just for human identification)
@@ -106,6 +117,8 @@ dependencies {
   //runtimeOnly fg.deobf('curse.maven:mcjtylib-233105:3236516')
   //runtimeOnly fg.deobf('curse.maven:cofhworld-69162:3249453')
   //runtimeOnly fg.deobf('curse.maven:thermalfounation-222880:3248150')
+  //runtimeOnly fg.deobf('curse.maven:lolipop-347954:3232534')
+  //runtimeOnly fg.deobf('curse.maven:powah-352656:3232535')
 }
 
 jar {

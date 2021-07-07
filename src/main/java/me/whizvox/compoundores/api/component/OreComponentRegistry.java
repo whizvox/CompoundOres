@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import static me.whizvox.compoundores.CompoundOres.LOGGER;
 import static me.whizvox.compoundores.helper.Markers.REGISTRY;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
 
   private Map<ResourceLocation, OreComponent> nonEmptyRegistry;
@@ -255,7 +254,6 @@ public class OreComponentRegistry extends RegistryWrapper<OreComponent> {
     return instance;
   }
 
-  @SubscribeEvent
   public static void onNewRegistry(RegistryEvent.NewRegistry event) {
     LOGGER.info(REGISTRY, "Creating ore component registry");
     instance = new OreComponentRegistry(new RegistryBuilder<OreComponent>()

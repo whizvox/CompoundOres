@@ -4,6 +4,7 @@ import me.whizvox.compoundores.api.CompoundOresObjects;
 import me.whizvox.compoundores.api.component.OreComponentRegistry;
 import me.whizvox.compoundores.command.CompoundOresCommands;
 import me.whizvox.compoundores.config.CompoundOresConfig;
+import me.whizvox.compoundores.data.CompoundOresDataGenerator;
 import me.whizvox.compoundores.network.CompoundOresNetwork;
 import me.whizvox.compoundores.render.CompoundOreTileRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -15,7 +16,6 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -43,13 +43,15 @@ public class CompoundOres {
     CompoundOresConfig.register(ModLoadingContext.get());
 
     IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-    modBus.register(OreComponentRegistry.class);
+    modBus.addListener(OreComponentRegistry::onNewRegistry);
     modBus.register(CompoundOresObjects.class);
+    modBus.addListener(CompoundOresDataGenerator::gatherData);
     modBus.addListener(this::onClientSetup);
     modBus.addListener(this::onCommonSetup);
 
     IEventBus forgeBus = MinecraftForge.EVENT_BUS;
-    forgeBus.register(this);
+    forgeBus.addListener(this::onRegisterCommands);
+    forgeBus.addListener(this::onBiomeModify);
   }
 
   private void onCommonSetup(final FMLCommonSetupEvent event) {
@@ -61,12 +63,10 @@ public class CompoundOres {
     ClientRegistry.bindTileEntityRenderer(CompoundOresObjects.tileEntityType, CompoundOreTileRenderer::new);
   }
 
-  @SubscribeEvent
   public void onRegisterCommands(final RegisterCommandsEvent event) {
     CompoundOresCommands.register(event.getDispatcher());
   }
 
-  @SubscribeEvent
   public void onBiomeModify(final BiomeLoadingEvent event) {
     if (CompoundOresConfig.COMMON.generateCompoundOres.get()) {
       event.getGeneration().getFeatures(GenerationStage.Decoration.UNDERGROUND_ORES).add(() -> CompoundOresObjects.configuredFeature);
