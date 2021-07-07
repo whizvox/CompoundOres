@@ -42,7 +42,7 @@ repositories {
   }
 }
 
-version = 'dev-20200707'
+version = 'alpha-0.1'
 group = 'me.whizvox.compoundores'
 archivesBaseName = 'CompoundOres'
 

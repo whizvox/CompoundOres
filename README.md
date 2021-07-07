@@ -1,20 +1,19 @@
 # Compound Ores
 
+![Compound Ores logo](https://i.imgur.com/buJObXr.png)
+
 ## Summary
 
 Compound Ores is a Minecraft Forge mod that aims to spice up your mining expeditions. It adds a wide variety of compound
-ores--ores that contain two ores within--that will randomly replace some blocks in ore veins.
+ores--ores that contain two ores within--that will replace blocks in random ore veins.
 
 ## Current Status
 
-**Very work-in-progress.** Please do not use this expecting a finished, fully-working product. As a rule-of-thumb, if
-the version string includes `dev` or `alpha`, then that's a good sign not to use it for a proper playthrough.
+**Work-in-progress.** Still need to thoroughly bug test and add support for many more ores.
 
 ## Bucket List
 
-(higher up the list = higher priority)
-
-* Test compatibility with other mods
+* Support many different ores from many different mods
 * Write proper documentation
 * Port to 1.17
 * Port to Fabric
